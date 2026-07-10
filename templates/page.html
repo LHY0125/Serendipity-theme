@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!--
+  Theme: theme-Serenity
+  Author: Serenity
+  Build: 2026-07-10 21:10:32
+  Fingerprint: c8c252d6f03f2b11
+  Copyright (c) 2026 Serenity. All rights reserved.
+-->
+
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{modules/layout :: html(title = ${singlePage.spec.title}, content = ~{::content}, head = ~{::head})}">
+<th:block th:fragment="head">
+  <link rel="stylesheet" th:href="@{/assets/css/post-page.css}" />
+</th:block>
+<th:block th:fragment="content">
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title" th:text="${singlePage.spec.title}">页面标题</h1>
+    </header>
+    
+    <div class="post-content" th:utext="${singlePage.content.content}">
+      页面内容
+    </div>
+  </article>
+</th:block>
+</html>
