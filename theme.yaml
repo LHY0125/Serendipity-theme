@@ -7,17 +7,17 @@ spec:
   author:
     name: Serenity
     website: https://github.com/atangccc
-  description: Serenity 开发的 Halo 博客主题，简约优雅，支持亮色/暗色模式。
+  description: Serenity 开发的 Halo 博客主题，简约优雅，支持亮色/暗色双主题色配置。
   logo: /themes/theme-Serenity/assets/public/logo.webp
   homepage: https://github.com/atangccc/Serenity-Grace
   repo: https://github.com/atangccc/Serenity-Grace
   issues: https://github.com/atangccc/Serenity-Grace/issues
   license:
     - name: GPL-3.0
-      url: https://github.com/atangccc/Serenity-Grace/blob/main/LICENSE
+      url: LICENSE
   settingName: theme-Serenity-setting
   configMapName: theme-Serenity-configmap
-  version: 1.1.2
+  version: 2.1.5
   requires: ">=2.0.0"
   customTemplates:
     page:
@@ -53,6 +53,18 @@ spec:
         description: 图库
         screenshot: 
         file: photos.html
+      - name: star-gallery
+        description: 星图库
+        screenshot: 
+        file: star-gallery.html
+      - name: wishes
+        description: 便签墙
+        screenshot: 
+        file: wishes.html
+      - name: equipments
+        description: 我的装备
+        screenshot: 
+        file: equipments.html
     post:
       - name: default
         description: 默认文章

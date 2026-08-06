@@ -1,25 +1,30 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
 (function() {
   'use strict';
   
-  let postsData = [];
-  let searchTimeout = null;
+  var postsData = [];
+  var searchTimeout = null;
+  var dataLoaded = false;
   
   // 缓存 DOM 元素
-  let modalEl, inputEl, resultsEl, searchBoxEl;
+  var modalEl, inputEl, resultsEl, searchBoxEl;
   
   window.openSearchModal = function() {
     if (modalEl && inputEl) {
       modalEl.classList.add('active');
       document.body.style.overflow = 'hidden';
-      requestAnimationFrame(() => inputEl.focus());
+      requestAnimationFrame(function() { inputEl.focus(); });
+      // 打开搜索框时加载数据
+      if (!dataLoaded) {
+        loadPostsData();
+      }
     }
   };
   
@@ -28,7 +33,7 @@
       modalEl.classList.remove('active');
       document.body.style.overflow = '';
       inputEl.value = '';
-      resultsEl.innerHTML = '<div class="search-empty">输入关键词开始搜索</div>';
+      resultsEl.innerHTML = '<div class="search-empty">输入关键词开始搜索<\/div>';
     }
   };
   
@@ -36,55 +41,69 @@
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
   
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  
   function highlightKeyword(text, keyword) {
-    if (!text || !keyword) return text || '';
+    if (!text || !keyword) return escapeHtml(text) || '';
     try {
-      const regex = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
-      return text.replace(regex, '<mark>$1</mark>');
+      var escaped = escapeHtml(text);
+      var regex = new RegExp('(' + escapeRegExp(keyword) + ')', 'gi');
+      return escaped.replace(regex, '<mark>$1<\/mark>');
     } catch (e) {
-      return text;
+      return escapeHtml(text);
     }
   }
   
   function searchPosts(keyword) {
     if (!keyword) return [];
-    const lowerKeyword = keyword.toLowerCase();
-    return postsData.filter(post => {
-      const title = (post.title || '').toLowerCase();
-      const excerpt = (post.excerpt || '').toLowerCase();
+    var lowerKeyword = keyword.toLowerCase();
+    return postsData.filter(function(post) {
+      var title = (post.title || '').toLowerCase();
+      var excerpt = (post.excerpt || '').toLowerCase();
       return title.includes(lowerKeyword) || excerpt.includes(lowerKeyword);
     });
   }
   
   function loadPostsData() {
-    if (window.POSTS_DATA && Array.isArray(window.POSTS_DATA)) {
-      postsData = window.POSTS_DATA.map(post => ({
-        title: post.spec?.title || '',
-        excerpt: post.status?.excerpt || post.spec?.excerpt?.raw || '',
-        url: post.status?.permalink || '#'
-      }));
-    }
+    fetch('/apis/api.content.halo.run/v1alpha1/posts?page=1&size=100')
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data && data.items) {
+          postsData = data.items.map(function(post) {
+            return {
+              title: post.spec && post.spec.title || '',
+              excerpt: post.status && post.status.excerpt || '',
+              url: post.status && post.status.permalink || '#'
+            };
+          });
+          dataLoaded = true;
+        }
+      })
+      .catch(function() {});
   }
   
   function handleSearch(keyword) {
     if (!keyword) {
-      resultsEl.innerHTML = '<div class="search-empty">输入关键词开始搜索</div>';
+      resultsEl.innerHTML = '<div class="search-empty">输入关键词开始搜索<\/div>';
       return;
     }
     
-    const matchedPosts = searchPosts(keyword);
+    var matchedPosts = searchPosts(keyword);
     
     if (matchedPosts.length === 0) {
-      resultsEl.innerHTML = '<div class="search-empty">未找到相关文章</div>';
+      resultsEl.innerHTML = '<div class="search-empty">未找到相关文章<\/div>';
       return;
     }
     
-    const html = matchedPosts.map(post => `
-      <a href="${post.url}" class="search-item">
-        <div class="search-item-title">${highlightKeyword(post.title, keyword)}</div>
-        <div class="search-item-excerpt">${highlightKeyword(post.excerpt, keyword)}</div>
-      </a>
-    `).join('');
+    var html = matchedPosts.map(function(post) {
+      return '<a href="' + escapeHtml(post.url) + '" class="search-item">' +
+        '<div class="search-item-title">' + highlightKeyword(post.title, keyword) + '<\/div>' +
+        '<div class="search-item-excerpt">' + highlightKeyword(post.excerpt, keyword) + '<\/div>' +
+      '<\/a>';
+    }).join('');
     
     resultsEl.innerHTML = html;
   }
@@ -96,14 +115,12 @@
     resultsEl = document.getElementById('search-results');
     searchBoxEl = document.getElementById('search-box');
     
-    loadPostsData();
-    
     if (searchBoxEl) {
       searchBoxEl.addEventListener('click', openSearchModal);
     }
     
     // 键盘快捷键
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeSearchModal();
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
@@ -113,17 +130,17 @@
     
     // 搜索输入防抖
     if (inputEl) {
-      inputEl.addEventListener('input', (e) => {
+      inputEl.addEventListener('input', function(e) {
         clearTimeout(searchTimeout);
-        const keyword = e.target.value.trim();
+        var keyword = e.target.value.trim();
         
         if (!keyword) {
-          resultsEl.innerHTML = '<div class="search-empty">输入关键词开始搜索</div>';
+          resultsEl.innerHTML = '<div class="search-empty">输入关键词开始搜索<\/div>';
           return;
         }
         
-        resultsEl.innerHTML = '<div class="search-loading">搜索中...</div>';
-        searchTimeout = setTimeout(() => handleSearch(keyword), 200);
+        resultsEl.innerHTML = '<div class="search-loading">搜索中...<\/div>';
+        searchTimeout = setTimeout(function() { handleSearch(keyword); }, 200);
       });
     }
   }

@@ -2,8 +2,8 @@
 <!--
   Theme: theme-Serenity
   Author: Serenity
-  Build: 2026-07-10 21:20:49
-  Fingerprint: 821f517d56c40c00
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
   Copyright (c) 2026 Serenity. All rights reserved.
 -->
 
@@ -11,6 +11,27 @@
       th:replace="~{modules/layout :: html(title = ${tag.spec.displayName ?: 'JavaScript'}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/archives.css}" />
+  <link rel="canonical" th:href="${site.url + tag.status.permalink}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" th:content="${tag.spec.displayName + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
+  <meta property="og:description" th:content="${'标签「' + tag.spec.displayName + '」下的所有文章'}" />
+  <meta property="og:url" th:content="${site.url + tag.status.permalink}" />
+  <meta name="twitter:title" th:content="${tag.spec.displayName + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
+  <meta name="twitter:description" th:content="${'标签「' + tag.spec.displayName + '」下的所有文章'}" />
+  <script th:if="${theme.config.seo != null && theme.config.seo.seoConfig != null && (theme.config.seo.seoConfig.enableJsonLd == null || theme.config.seo.seoConfig.enableJsonLd)}" type="application/ld+json" th:inline="javascript">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": /*[[${tag.spec.displayName}]]*/ "",
+    "description": /*[[${'标签「' + tag.spec.displayName + '」下的所有文章'}]]*/ "",
+    "url": /*[[${site.url + tag.status.permalink}]]*/ "",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title}]]*/ "",
+      "url": /*[[${site.url}]]*/ ""
+    }
+  }
+  </script>
 </th:block>
 <th:block th:fragment="content">
   <div class="page-gradient"></div>
@@ -59,56 +80,15 @@
           </a>
         </th:block>
         <th:block th:if="${#lists.isEmpty(posts.items)}">
-          <a href="post.html" class="archive-card">
-            <div class="archive-card-cover">
-              <img src="https://picsum.photos/seed/js1/300/200" alt="" />
+          <div class="plugin-notice">
+            <div class="plugin-notice-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
             </div>
-            <div class="archive-card-content">
-              <h2 class="archive-card-title">JavaScript 异步编程完全指南</h2>
-              <p class="archive-card-desc">深入理解 Promise、async/await 和事件循环...</p>
-              <div class="archive-card-meta">
-                <div class="archive-card-tags">
-                  <span class="archive-tag">JavaScript</span>
-                  <span class="archive-tag">异步</span>
-                </div>
-                <time class="archive-card-date">01-15</time>
-              </div>
-            </div>
-            <th:block th:replace="~{modules/watermark :: watermark('archive-card-watermark')}" />
-          </a>
-          <a href="post.html" class="archive-card">
-            <div class="archive-card-cover">
-              <img src="https://picsum.photos/seed/js2/300/200" alt="" />
-            </div>
-            <div class="archive-card-content">
-              <h2 class="archive-card-title">ES2024 新特性一览</h2>
-              <p class="archive-card-desc">JavaScript 最新标准带来的新功能...</p>
-              <div class="archive-card-meta">
-                <div class="archive-card-tags">
-                  <span class="archive-tag">JavaScript</span>
-                  <span class="archive-tag">ES2024</span>
-                </div>
-                <time class="archive-card-date">01-10</time>
-              </div>
-            </div>
-            <th:block th:replace="~{modules/watermark :: watermark('archive-card-watermark')}" />
-          </a>
-          <a href="post.html" class="archive-card">
-            <div class="archive-card-cover">
-              <img src="https://picsum.photos/seed/js3/300/200" alt="" />
-            </div>
-            <div class="archive-card-content">
-              <h2 class="archive-card-title">JavaScript 设计模式实战</h2>
-              <p class="archive-card-desc">常用设计模式在前端开发中的应用...</p>
-              <div class="archive-card-meta">
-                <div class="archive-card-tags">
-                  <span class="archive-tag">JavaScript</span>
-                </div>
-                <time class="archive-card-date">01-05</time>
-              </div>
-            </div>
-            <th:block th:replace="~{modules/watermark :: watermark('archive-card-watermark')}" />
-          </a>
+            <h3 class="plugin-notice-title">该标签下暂无文章</h3>
+            <p class="plugin-notice-desc">发布文章并添加该标签后将在此展示</p>
+          </div>
         </th:block>
       </div>
 
@@ -118,7 +98,7 @@
         </div>
         
         <div class="pagination-controls">
-          <a th:if="${posts.hasPrevious()}" class="pagination-arrow" th:href="@{${tag.status.permalink} + '/page/' + ${posts.page - 1}}" title="上一页">
+          <a th:if="${posts.hasPrevious()}" class="pagination-arrow" th:href="@{${tag.status.permalink} + '/page/' + ${posts.page - 1}}" title="上一页" aria-label="上一页">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M15 18l-6-6 6-6"/>
             </svg>
@@ -133,7 +113,7 @@
             <span th:text="${posts.page}">1</span> / <span th:text="${posts.totalPages}">1</span>
           </span>
           
-          <a th:if="${posts.hasNext()}" class="pagination-arrow" th:href="@{${tag.status.permalink} + '/page/' + ${posts.page + 1}}" title="下一页">
+          <a th:if="${posts.hasNext()}" class="pagination-arrow" th:href="@{${tag.status.permalink} + '/page/' + ${posts.page + 1}}" title="下一页" aria-label="下一页">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M9 18l6-6-6-6"/>
             </svg>

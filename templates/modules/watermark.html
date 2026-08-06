@@ -4,10 +4,10 @@
 
 <th:block th:fragment="watermark(cssClass)">
   <th:block th:with="
-    watermarkEnabled = ${theme.config.watermark != null && theme.config.watermark.enabled != false},
-    watermarkSource = ${theme.config.watermark != null ? theme.config.watermark.source : 'custom'},
-    watermarkText = ${theme.config.watermark != null && theme.config.watermark.text != null ? theme.config.watermark.text : 'Serenity'},
-    watermarkOpacity = ${theme.config.watermark != null && theme.config.watermark.opacity != null ? theme.config.watermark.opacity : 0.05},
+    watermarkEnabled = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null && theme.config.basic.watermarkConfig.watermarkEnabled != false},
+    watermarkSource = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null ? theme.config.basic.watermarkConfig.watermarkSource : 'custom'},
+    watermarkText = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null && theme.config.basic.watermarkConfig.watermarkText != null ? theme.config.basic.watermarkConfig.watermarkText : 'Serenity'},
+    watermarkOpacity = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null && theme.config.basic.watermarkConfig.watermarkOpacity != null ? theme.config.basic.watermarkConfig.watermarkOpacity : 0.05},
     finalText = ${watermarkSource == 'siteTitle' ? site.title : watermarkText}
   ">
     <span 
@@ -23,9 +23,9 @@
 
 <th:block th:fragment="watermarkText">
   <th:block th:with="
-    watermarkEnabled = ${theme.config.watermark != null && theme.config.watermark.enabled != false},
-    watermarkSource = ${theme.config.watermark != null ? theme.config.watermark.source : 'custom'},
-    watermarkText = ${theme.config.watermark != null && theme.config.watermark.text != null ? theme.config.watermark.text : 'Serenity'},
+    watermarkEnabled = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null && theme.config.basic.watermarkConfig.watermarkEnabled != false},
+    watermarkSource = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null ? theme.config.basic.watermarkConfig.watermarkSource : 'custom'},
+    watermarkText = ${theme.config.basic != null && theme.config.basic.watermarkConfig != null && theme.config.basic.watermarkConfig.watermarkText != null ? theme.config.basic.watermarkConfig.watermarkText : 'Serenity'},
     finalText = ${watermarkSource == 'siteTitle' ? site.title : watermarkText}
   ">
     <th:block th:if="${watermarkEnabled}" th:text="${finalText}">Serenity</th:block>

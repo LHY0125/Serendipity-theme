@@ -1,0 +1,162 @@
+/**
+ * Theme: theme-Serenity
+ * Author: Serenity
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
+ * Copyright (c) 2026 Serenity. All rights reserved.
+ */
+
+/**
+ * 通用灯箱模块
+ * 用法：SerenityLightbox.create({ className, delegateSelector, getSrc })
+ *
+ * @param {string}   className        - overlay 的 CSS 类名，如 'post-lightbox'
+ * @param {string}   delegateSelector - 触发灯箱的图片选择器（事件委托）
+ * @param {function} [getSrc]         - 可选，自定义取图片 src 的函数，默认取 data-src || src
+ * @param {function} [guard]          - 可选，前置守卫，返回 false 则不创建灯箱
+ * @returns {{ open, close, overlay }} 灯箱实例
+ */
+window.SerenityLightbox = (function() {
+  function create(opts) {
+    var className        = opts.className;
+    var delegateSelector = opts.delegateSelector;
+    var getSrc           = opts.getSrc || function(img) { return img.getAttribute('data-src') || img.src; };
+    var guard            = opts.guard;
+
+    if (typeof guard === 'function' && guard() === false) return null;
+
+    var overlay = document.createElement('div');
+    overlay.className = className;
+    // 内联样式 + !important：确保在 CSS 加载前就隐藏，且不被外部 CSS 覆盖
+    overlay.style.cssText = 'position:fixed !important;inset:0 !important;z-index:99999 !important;background:rgba(0,0,0,0.92) !important;display:flex !important;align-items:center !important;justify-content:center !important;opacity:0 !important;visibility:hidden !important;cursor:zoom-out !important;';
+    overlay.innerHTML =
+      '<div class="' + className + '-close" style="position:absolute;top:20px;right:24px;font-size:36px;color:rgba(255,255,255,0.7);cursor:pointer;line-height:1;z-index:1;">&times;</div>' +
+      '<img class="' + className + '-img" src="" alt="" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;transform:scale(0.9);transition:transform 0.3s ease;" />';
+    overlay.style.position = 'fixed';
+    document.body.appendChild(overlay);
+
+    var lbImg = overlay.querySelector('.' + className + '-img');
+
+    function open(src, alt) {
+      lbImg.src = '';
+      lbImg.alt = alt || '';
+      lbImg.src = src;
+      overlay.classList.add('active');
+      overlay.style.opacity = '1';
+      overlay.style.visibility = 'visible';
+      lbImg.style.transform = 'scale(1)';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      overlay.classList.remove('active');
+      overlay.style.opacity = '';
+      overlay.style.visibility = '';
+      lbImg.style.transform = '';
+      document.body.style.overflow = '';
+      lbImg.src = '';
+    }
+
+    function onDocClick(e) {
+      var img = e.target.closest(delegateSelector);
+      if (!img) return;
+      e.stopPropagation();
+      open(getSrc(img), img.alt);
+    }
+
+    function onKeydown(e) {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) {
+        close();
+      }
+    }
+
+    document.addEventListener('click', onDocClick);
+    overlay.addEventListener('click', close);
+    document.addEventListener('keydown', onKeydown);
+
+    function destroy() {
+      document.removeEventListener('click', onDocClick);
+      document.removeEventListener('keydown', onKeydown);
+      overlay.removeEventListener('click', close);
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }
+
+    return { open: open, close: close, destroy: destroy, overlay: overlay };
+  }
+
+  return { create: create };
+})();
+
+function __serenityInitLightboxes() {
+
+  clearTimeout(window.__lightboxInitTimer);
+
+  function __serenityDestroyLightboxes() {
+    var instances = ['__postLightbox', '__photosLightbox', '__momentLightbox', '__memoLightbox'];
+    instances.forEach(function(key) {
+      if (window[key] && typeof window[key].destroy === 'function') {
+        window[key].destroy();
+      }
+      window[key] = null;
+    });
+
+    ['.post-lightbox', '.photo-lightbox', '.moment-lightbox', '.memo-lightbox', '.image-lightbox'].forEach(function(selector) {
+      var el = document.querySelector(selector);
+      if (el) el.remove();
+    });
+
+    document.body.style.overflow = '';
+  }
+
+  __serenityDestroyLightboxes();
+
+  if (typeof window.__pjaxOnLeave === 'function') {
+    window.__pjaxOnLeave(function() {
+      clearTimeout(window.__lightboxInitTimer);
+      __serenityDestroyLightboxes();
+    });
+  }
+
+  window.__lightboxInitTimer = setTimeout(function() {
+
+    if (!window.__postLightbox && document.querySelector('.post-content img') && typeof SerenityLightbox !== 'undefined') {
+
+      var guardResult = !(typeof lightGallery === 'function' || document.querySelector('.lg-container'));
+      if (guardResult) {
+        window.__postLightbox = SerenityLightbox.create({
+          className: 'post-lightbox',
+          delegateSelector: '.post-content img',
+          guard: function() { return guardResult; }
+        });
+      }
+    }
+
+    if (!window.__photosLightbox && document.querySelector('.photo-wrapper img') && typeof SerenityLightbox !== 'undefined') {
+      window.__photosLightbox = SerenityLightbox.create({
+        className: 'photo-lightbox',
+        delegateSelector: '.photo-wrapper img'
+      });
+    }
+
+    if (!window.__momentLightbox && document.querySelector('.moment-media img') && typeof SerenityLightbox !== 'undefined') {
+      window.__momentLightbox = SerenityLightbox.create({
+        className: 'moment-lightbox',
+        delegateSelector: '.moment-media img'
+      });
+    }
+
+    if (!window.__memoLightbox && document.querySelector('.memo-zone .photo-img') && typeof SerenityLightbox !== 'undefined') {
+      window.__memoLightbox = SerenityLightbox.create({
+        className: 'memo-lightbox',
+        delegateSelector: '.memo-zone .photo-img'
+      });
+    }
+  }, 100);
+}
+
+// 首次加载初始化（整页跳转下每次都会触发）
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', __serenityInitLightboxes);
+} else {
+  __serenityInitLightboxes();
+}

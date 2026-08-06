@@ -2,92 +2,111 @@
 <!--
   Theme: theme-Serenity
   Author: Serenity
-  Build: 2026-07-10 21:20:49
-  Fingerprint: 821f517d56c40c00
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
   Copyright (c) 2026 Serenity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org"
-      th:replace="~{modules/layout :: html(title = '标签', content = ~{::content}, head = ~{::head})}">
+      th:replace="~{modules/layout :: html(title = ${(theme.config.watermark?.tags?.enabled == true ? theme.config.watermark.tags.title : null) ?: '标签'}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/tags.css}" />
-  <script th:src="@{/assets/js/tags.js}" defer></script>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" th:content="${((theme.config.watermark?.tags?.enabled == true ? theme.config.watermark.tags.title : null) ?: '标签') + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
+  <meta property="og:description" content="全部文章标签" />
+  <meta name="twitter:title" th:content="${((theme.config.watermark?.tags?.enabled == true ? theme.config.watermark.tags.title : null) ?: '标签') + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
+  <meta name="twitter:description" content="全部文章标签" />
 </th:block>
 <th:block th:fragment="content">
+  <!-- PJAX：页面脚本置于 content 内，随局部刷新重新执行 -->
+  <script th:src="@{/assets/js/tags.js}" defer></script>
   <div class="container">
     <header class="page-header" data-aos="fade-up">
-      <h1 class="page-title">标签</h1>
+      <h1 class="page-title" th:text="${(theme.config.watermark?.tags?.enabled == true ? theme.config.watermark.tags.title : null) ?: '标签'}">标签</h1>
+      <p class="page-desc" th:text="${(theme.config.watermark?.tags?.enabled == true ? theme.config.watermark.tags.subtitle : null) ?: '探索文章的标签世界'}">探索文章的标签世界</p>
       <p class="page-desc" th:if="${not #lists.isEmpty(tags)}">
-        共 <span th:text="${#lists.size(tags)}">12</span> 个标签
+        共 <span th:text="${#lists.size(tags)}">0</span> 个标签
       </p>
-      <p class="page-desc" th:unless="${not #lists.isEmpty(tags)}">共 12 个标签，73 篇文章</p>
     </header>
 
-    <div class="tags-layout">
-      <div class="tags-stats-card" data-aos="fade-right" data-aos-delay="100">
-        <div class="rings-container">
-          <svg class="rings-svg" viewBox="0 0 240 240">
-            <circle cx="120" cy="120" r="90" class="ring-bg"/>
-            <circle cx="120" cy="120" r="72" class="ring-bg"/>
-            <circle cx="120" cy="120" r="54" class="ring-bg"/>
-            <circle cx="120" cy="120" r="36" class="ring-bg"/>
-            <th:block th:if="${not #lists.isEmpty(tags)}">
-              <circle th:if="${#lists.size(tags) > 0}" cx="120" cy="120" r="90" class="ring ring-1" 
-                      th:attr="data-name=${tags[0].spec.displayName},data-count=${tags[0].status.postCount}"/>
-              <circle th:if="${#lists.size(tags) > 1}" cx="120" cy="120" r="72" class="ring ring-2" 
-                      th:attr="data-name=${tags[1].spec.displayName},data-count=${tags[1].status.postCount}"/>
-              <circle th:if="${#lists.size(tags) > 2}" cx="120" cy="120" r="54" class="ring ring-3" 
-                      th:attr="data-name=${tags[2].spec.displayName},data-count=${tags[2].status.postCount}"/>
-              <circle th:if="${#lists.size(tags) > 3}" cx="120" cy="120" r="36" class="ring ring-4" 
-                      th:attr="data-name=${tags[3].spec.displayName},data-count=${tags[3].status.postCount}"/>
-            </th:block>
-            <th:block th:if="${#lists.isEmpty(tags)}">
-              <circle cx="120" cy="120" r="90" class="ring ring-1" data-name="JavaScript" data-count="15"/>
-              <circle cx="120" cy="120" r="72" class="ring ring-2" data-name="React" data-count="12"/>
-              <circle cx="120" cy="120" r="54" class="ring ring-3" data-name="Vue" data-count="10"/>
-              <circle cx="120" cy="120" r="36" class="ring ring-4" data-name="TypeScript" data-count="8"/>
-            </th:block>
-          </svg>
-          <div class="rings-center">
-            <span class="rings-total">73</span>
-            <span class="rings-label">篇文章</span>
-          </div>
-          <div class="ring-tooltip" id="ring-tooltip">
-            <span class="tooltip-dot"></span>
-            <span class="tooltip-name"></span>
-            <span class="tooltip-count"></span>
-          </div>
-        </div>
-      </div>
+    <th:block th:if="${not #lists.isEmpty(tags)}">
+      <div class="tags-panel" data-aos="fade-up" data-aos-delay="100">
+        <th:block th:replace="~{modules/watermark :: watermark('tags-panel-watermark')}" />
 
-      <div class="tags-cloud-card" data-aos="fade-left" data-aos-delay="100">
-        <th:block th:replace="~{modules/watermark :: watermark('tags-cloud-watermark')}" />
-        <div class="tags-cloud">
-          <th:block th:if="${not #lists.isEmpty(tags)}">
-            <a th:each="tag, iterStat : ${tags}" 
-               th:href="@{${tag.status.permalink}}" 
-               class="tag-item"
-               th:style="|--tag-color: ${iterStat.index % 5 == 0 ? '#5B8FF9' : (iterStat.index % 5 == 1 ? '#5AD8A6' : (iterStat.index % 5 == 2 ? '#F6BD16' : (iterStat.index % 5 == 3 ? '#E86452' : '#945FB9')))};|">
-              <span th:text="${tag.spec.displayName}">标签</span>
-              <span class="tag-count" th:text="${tag.status.postCount}">0</span>
-            </a>
-          </th:block>
-          <th:block th:if="${#lists.isEmpty(tags)}">
-            <a href="#" class="tag-item" style="--tag-color: #5B8FF9;">JavaScript<span class="tag-count">15</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #5AD8A6;">React<span class="tag-count">12</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #5AD8A6;">Vue<span class="tag-count">10</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #F6BD16;">TypeScript<span class="tag-count">8</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #F6BD16;">CSS<span class="tag-count">7</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #E86452;">Node.js<span class="tag-count">5</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #E86452;">Next.js<span class="tag-count">4</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #E86452;">前端<span class="tag-count">4</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #945FB9;">Tailwind<span class="tag-count">3</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #945FB9;">Docker<span class="tag-count">2</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #945FB9;">Git<span class="tag-count">2</span></a>
-            <a href="#" class="tag-item" style="--tag-color: #945FB9;">Linux<span class="tag-count">1</span></a>
-          </th:block>
+        <div class="tags-stats">
+
+          <div class="stats-ring">
+            <div class="rings-container">
+              <svg class="rings-svg" viewBox="0 0 240 240" id="rings-svg">
+                <circle cx="120" cy="120" r="90" class="ring-bg"/>
+                <circle cx="120" cy="120" r="72" class="ring-bg"/>
+                <circle cx="120" cy="120" r="54" class="ring-bg"/>
+                <circle cx="120" cy="120" r="36" class="ring-bg"/>
+              </svg>
+              <div id="tags-data" style="display:none;">
+                <span th:each="tag : ${tags}" class="tag-data-item"
+                      th:attr="data-name=${tag.spec.displayName},data-count=${tag.status.postCount},data-color=${tag.spec.color}"></span>
+              </div>
+              <div class="rings-center">
+                <span class="rings-total" id="rings-total">0</span>
+                <span class="rings-label">个标签</span>
+              </div>
+              <div class="ring-tooltip" id="ring-tooltip">
+                <span class="tooltip-dot"></span>
+                <span class="tooltip-name"></span>
+                <span class="tooltip-count"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-chart">
+            <div class="chart-area" id="chart-area">
+              <div th:each="tag, iterStat : ${tags}"
+                   class="chart-col"
+                   th:attr="data-count=${tag.status.postCount},data-name=${tag.spec.displayName}">
+                <div class="col-bar">
+                  <div class="col-fill"
+                       th:if="${tag.spec.color != null}"
+                       th:style="|--bar-color: ${tag.spec.color};|"></div>
+                  <div class="col-fill"
+                       th:if="${tag.spec.color == null}"></div>
+                </div>
+              </div>
+              <div class="chart-tooltip" id="chart-tooltip">
+                <span class="chart-tooltip-name"></span>
+                <span class="chart-tooltip-count"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tags-divider"></div>
+
+        <!-- 标签-->
+        <div class="tags-wall">
+          <a th:each="tag, iterStat : ${tags}"
+             th:href="@{${tag.status.permalink}}"
+             class="tag-chip"
+             th:classappend="${iterStat.index < 3 ? 'chip-lg' : (iterStat.index < 7 ? 'chip-md' : 'chip-sm')}"
+             th:attr="data-name=${tag.spec.displayName}"
+             th:style="${tag.spec.color != null ? '--tag-color: ' + tag.spec.color + ';' : ''}">
+            <span class="chip-dot"></span>
+            <span th:text="${tag.spec.displayName}">标签</span>
+            <span class="chip-count" th:text="${tag.status.postCount}">0</span>
+          </a>
         </div>
       </div>
+    </th:block>
+
+    <div th:if="${#lists.isEmpty(tags)}" class="plugin-notice" data-aos="fade-up">
+      <div class="plugin-notice-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+      </div>
+      <h3 class="plugin-notice-title">暂无标签</h3>
+      <p class="plugin-notice-desc">为文章添加标签后将在此展示</p>
     </div>
   </div>
 

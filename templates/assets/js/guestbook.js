@@ -1,25 +1,21 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
-const COMMENT_DATA = [];
-
-function htmlToText(html) {
-  const temp = document.createElement('div');
-  temp.innerHTML = html;
-  return temp.textContent || temp.innerText || '';
-}
+var COMMENT_DATA = [];
 
 async function fetchCommentData() {
+  // 幂等：重入时重置数组，避免数据翻倍累积
+  COMMENT_DATA = [];
   try {
     const params = new URLSearchParams({
       group: 'content.halo.run',
       kind: 'SinglePage',
-      name: 'guestbook',
+      name: window.__GUESTBOOK_PAGE_NAME__ || 'guestbook',
       page: '1',
       size: '100',
       version: 'v1alpha1',
@@ -32,25 +28,18 @@ async function fetchCommentData() {
     const data = await response.json();
     
     if (data.items && data.items.length > 0) {
-      data.items.forEach(item => {
+      for (const item of data.items) {
         const author = item.owner?.displayName || item.owner?.name || '匿名';
         const text = htmlToText(item.spec?.content || '').trim();
         
-        let avatar = '';
-        const annotations = item.spec?.owner?.annotations;
-        if (annotations) {
-          const website = annotations.website;
-          const emailHash = annotations['email-hash'];
-          if (website && emailHash) {
-            const baseUrl = website.endsWith('/') ? website : website + '/';
-            avatar = `${baseUrl}avatar/${emailHash}`;
-          }
-        }
+        const avatar = window.SerenityCommentAvatar
+          ? await window.SerenityCommentAvatar.resolve(item)
+          : (item.owner?.avatar || '');
         
         if (text) {
           COMMENT_DATA.push({ author, text, avatar });
         }
-      });
+      }
       
       const count = COMMENT_DATA.length;
       document.getElementById('guestbookCount').textContent = count;
@@ -62,7 +51,8 @@ async function fetchCommentData() {
 
 fetchCommentData();
 
-class DanmakuSystem {
+// Use var to avoid redeclaration error on re-execution
+var DanmakuSystem = class DanmakuSystem {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.canvas = document.getElementById('danmakuCanvas');
@@ -100,7 +90,7 @@ class DanmakuSystem {
   startAutoPlay() {
     let currentIndex = 0;
     
-    setInterval(() => {
+    this._autoPlayTimer = setInterval(() => {
       if (!this.isPaused && this.messages.length > 0) {
         const msg = this.messages[currentIndex];
         
@@ -130,7 +120,7 @@ class DanmakuSystem {
     danmaku.className = 'danmaku-item';
     
     const avatarHTML = avatar ? 
-      `<img src="${avatar}" class="danmaku-avatar" alt="${this.escapeHtml(author)}" />` : '';
+      `<img src="${avatar}" class="danmaku-avatar" alt="${this.escapeHtml(author)}" onerror="this.style.display='none'" />` : '';
     
     danmaku.innerHTML = `
       ${avatarHTML}
@@ -161,12 +151,28 @@ class DanmakuSystem {
   }
   
   escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    // 复用 main.js 全局 escapeHtml
+    return (typeof window.escapeHtml === 'function') ? window.escapeHtml(text) : text;
+  }
+};
+
+function initDanmakuSystem() {
+  // 重入时停掉上一个实例的自动播放定时器，避免 interval 泄漏
+  if (window.__danmakuSystem && window.__danmakuSystem._autoPlayTimer) {
+    clearInterval(window.__danmakuSystem._autoPlayTimer);
+  }
+  window.__danmakuSystem = new DanmakuSystem('danmakuContainer');
+  if (typeof window.__pjaxOnLeave === 'function') {
+    window.__pjaxOnLeave(function () {
+      if (window.__danmakuSystem && window.__danmakuSystem._autoPlayTimer) {
+        clearInterval(window.__danmakuSystem._autoPlayTimer);
+      }
+    });
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  new DanmakuSystem('danmakuContainer');
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDanmakuSystem);
+} else {
+  initDanmakuSystem();
+}

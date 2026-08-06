@@ -1,13 +1,18 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-  // 文章过期提示
+function initPost() {
+  document.querySelectorAll('.post-content img').forEach(function(img) {
+    if (!img.getAttribute('data-src') && img.src) {
+      img.setAttribute('data-src', img.src);
+    }
+  });
+
   const outdatedNotice = document.getElementById('post-outdated-notice');
   if (outdatedNotice) {
     const publishTimeStr = outdatedNotice.dataset.publishTime;
@@ -43,8 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const content = document.querySelector('.post-content');
   const tocNav = document.getElementById('toc-nav');
-  
-  // SVG 图标定义 - 自然元素系列（Serenity 主题风格）
+
   const headingIcons = {
     // H2: 单层云朵
     h2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="heading-icon">
@@ -72,29 +76,54 @@ document.addEventListener('DOMContentLoaded', function() {
       <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
     </svg>`
   };
-  
-  // 为文章标题添加图标
-  if (content) {
+
+  var showHeadingIcons = window.__showHeadingIcons !== false;
+
+  if (content && showHeadingIcons) {
     const headings = content.querySelectorAll('h2, h3, h4, h5, h6');
-    
     headings.forEach((heading) => {
       if (heading.classList.contains('post-heading-inline')) return;
-      
       const tagName = heading.tagName.toLowerCase();
       const text = heading.textContent;
       const iconSvg = headingIcons[tagName];
-      
       if (iconSvg) {
         const textSpan = document.createElement('span');
         textSpan.className = 'heading-text';
         textSpan.textContent = text;
-        
         heading.innerHTML = '';
         heading.classList.add('post-heading-inline');
         heading.insertAdjacentHTML('beforeend', iconSvg);
         heading.appendChild(textSpan);
       }
     });
+
+    (function() {
+      function applyState(show) {
+        document.documentElement.classList.toggle('hide-heading-icons', !show);
+      }
+      var postContent = document.querySelector('.post-content');
+      if (postContent && !postContent.querySelector('.heading-icons-toggle')) {
+        var toggle = document.createElement('div');
+        toggle.className = 'heading-icons-toggle';
+        toggle.innerHTML =
+          '<button class="toggle-btn active" data-val="show" title="显示标题图标">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>' +
+          '</button>' +
+          '<button class="toggle-btn" data-val="hide" title="隐藏标题图标">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>' +
+          '</button>';
+        postContent.insertBefore(toggle, postContent.firstChild);
+        toggle.addEventListener('click', function(e) {
+          var btn = e.target.closest('.toggle-btn');
+          if (!btn) return;
+          var show = btn.dataset.val === 'show';
+          applyState(show);
+          toggle.querySelectorAll('.toggle-btn').forEach(function(b) {
+            b.classList.toggle('active', b.dataset.val === (show ? 'show' : 'hide'));
+          });
+        });
+      }
+    })();
   }
   
   if (!content || !tocNav) return;
@@ -112,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentH3Item = null;
   let currentH3List = null;
   let currentH4List = null;
+  tocNav.innerHTML = '';
   const mainList = document.createElement('ol');
   mainList.className = 'toc-list';
   
@@ -136,89 +166,117 @@ document.addEventListener('DOMContentLoaded', function() {
       mainList.appendChild(li);
       currentH2Item = li;
       currentH3List = null;
+      currentH3Item = null;
       currentH4List = null;
     } else if (tagName === 'h3') {
-      if (!currentH3List) {
-        currentH3List = document.createElement('ol');
-        currentH3List.className = 'toc-list toc-list-h3';
-        if (currentH2Item) {
+      if (currentH2Item) {
+        // 有 h2 父级，h3 作为子项
+        if (!currentH3List) {
+          currentH3List = document.createElement('ol');
+          currentH3List.className = 'toc-list toc-list-h3';
           currentH2Item.appendChild(currentH3List);
-        } else {
-          mainList.appendChild(li);
-          return;
         }
+        currentH3List.appendChild(li);
+      } else {
+        // 没有 h2 父级，h3 作为顶层项
+        mainList.appendChild(li);
       }
-      currentH3List.appendChild(li);
       currentH3Item = li;
       currentH4List = null;
     } else if (tagName === 'h4') {
-      if (!currentH4List) {
-        currentH4List = document.createElement('ol');
-        currentH4List.className = 'toc-list toc-list-h4';
-        if (currentH3Item) {
+      if (currentH3Item) {
+        // 有 h3 父级，h4 作为子项
+        if (!currentH4List) {
+          currentH4List = document.createElement('ol');
+          currentH4List.className = 'toc-list toc-list-h4';
           currentH3Item.appendChild(currentH4List);
-        } else if (currentH3List) {
-          currentH3List.appendChild(li);
-          return;
-        } else {
-          mainList.appendChild(li);
-          return;
         }
+        currentH4List.appendChild(li);
+      } else if (currentH2Item) {
+        // 没有 h3 但有 h2，h4 挂到 h2 的子列表
+        if (!currentH3List) {
+          currentH3List = document.createElement('ol');
+          currentH3List.className = 'toc-list toc-list-h3';
+          currentH2Item.appendChild(currentH3List);
+        }
+        currentH3List.appendChild(li);
+      } else {
+        // 都没有，h4 作为顶层项
+        mainList.appendChild(li);
       }
-      currentH4List.appendChild(li);
     }
   });
   
   tocNav.appendChild(mainList);
+
+  tocNav.setAttribute('data-lenis-prevent', '');
   
   const links = tocNav.querySelectorAll('.toc-link');
   
+  var lastActiveId = null;
   function highlightToc() {
     let current = '';
-    
+
     headings.forEach(heading => {
       const rect = heading.getBoundingClientRect();
       if (rect.top <= 100) {
         current = heading.id;
       }
     });
-    
+
+    if (current === lastActiveId) return;
+    lastActiveId = current;
+
     links.forEach(link => {
       link.classList.remove('is-active-link');
       if (link.getAttribute('href') === `#${current}`) {
         link.classList.add('is-active-link');
-        
-        setTimeout(() => {
-          const linkRect = link.getBoundingClientRect();
-          const tocNavRect = tocNav.getBoundingClientRect();
-          
-          const linkRelativeTop = linkRect.top - tocNavRect.top + tocNav.scrollTop;
-          const tocNavHeight = tocNav.clientHeight;
-          const linkHeight = linkRect.height;
-          
-          const isAboveView = linkRect.top < tocNavRect.top;
-          const isBelowView = linkRect.bottom > tocNavRect.bottom;
-          
-          if (isAboveView || isBelowView) {
-            tocNav.scrollTo({
-              top: linkRelativeTop - tocNavHeight / 2 + linkHeight / 2,
-              behavior: 'smooth'
-            });
-          }
-        }, 100);
+
+        const linkRect = link.getBoundingClientRect();
+        const tocNavRect = tocNav.getBoundingClientRect();
+
+        const linkRelativeTop = linkRect.top - tocNavRect.top + tocNav.scrollTop;
+        const tocNavHeight = tocNav.clientHeight;
+        const linkHeight = linkRect.height;
+
+        const isAboveView = linkRect.top < tocNavRect.top;
+        const isBelowView = linkRect.bottom > tocNavRect.bottom;
+
+        if (isAboveView || isBelowView) {
+          tocNav.scrollTo({
+            top: linkRelativeTop - tocNavHeight / 2 + linkHeight / 2,
+            behavior: 'smooth'
+          });
+        }
       }
     });
   }
   
-  window.addEventListener('scroll', highlightToc);
-  window.addEventListener('scroll', updateReadingProgress);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  if (typeof window.__pjaxOnLeave === 'function') {
+    window.__pjaxOnLeave(function() {
+      window.removeEventListener('scroll', onScroll);
+    });
+  }
   highlightToc();
   updateReadingProgress();
+
+  var scrollTicking = false;
+  function onScroll() {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(function () {
+      highlightToc();
+      updateReadingProgress();
+      scrollTicking = false;
+    });
+  }
   
   // 阅读进度更新
   function updateReadingProgress() {
     const progressEl = document.getElementById('reading-progress');
-    if (!progressEl || !content) return;
+    const progressBar = document.getElementById('reading-progress-bar');
+    if (!content) return;
     
     const contentRect = content.getBoundingClientRect();
     const contentTop = contentRect.top + window.pageYOffset;
@@ -239,12 +297,17 @@ document.addEventListener('DOMContentLoaded', function() {
       progress = Math.round(((scrollY - startReading) / (endReading - startReading)) * 100);
     }
     
-    progressEl.textContent = progress + '%';
+    if (progressEl) {
+      progressEl.textContent = progress + '%';
+      if (progress >= 100) {
+        progressEl.classList.add('complete');
+      } else {
+        progressEl.classList.remove('complete');
+      }
+    }
     
-    if (progress >= 100) {
-      progressEl.classList.add('complete');
-    } else {
-      progressEl.classList.remove('complete');
+    if (progressBar) {
+      progressBar.style.width = progress + '%';
     }
   }
   
@@ -254,10 +317,17 @@ document.addEventListener('DOMContentLoaded', function() {
       const targetId = this.getAttribute('href').slice(1);
       const target = document.getElementById(targetId);
       if (target) {
-        window.scrollTo({
-          top: target.offsetTop - 100,
-          behavior: 'smooth'
-        });
+        // 使用 getBoundingClientRect 获取准确的文档位置，避免 offsetTop 受定位祖先影响
+        const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 64;
+        const targetTop = target.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
+        if (window.__lenis) {
+          window.__lenis.scrollTo(targetTop, { duration: 1.2 });
+        } else {
+          window.scrollTo({
+            top: targetTop,
+            behavior: 'smooth'
+          });
+        }
       }
     });
   });
@@ -267,23 +337,119 @@ document.addEventListener('DOMContentLoaded', function() {
   const commentsSection = document.getElementById('post-comments');
   
   if (goToCommentsBtn && commentsSection) {
-    // 滚动时显示/隐藏按钮
-    window.addEventListener('scroll', function() {
-      const commentsTop = commentsSection.getBoundingClientRect().top;
-      
+    function onCommentsScroll() {
+      var commentsTop = commentsSection.getBoundingClientRect().top;
       if (window.pageYOffset > 300 && commentsTop > window.innerHeight) {
         goToCommentsBtn.classList.add('visible');
       } else {
         goToCommentsBtn.classList.remove('visible');
       }
-    }, { passive: true });
-    
-    // 点击跳转到评论
-    goToCommentsBtn.addEventListener('click', function() {
-      commentsSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+    }
+    window.addEventListener('scroll', onCommentsScroll, { passive: true });
+    if (typeof window.__pjaxOnLeave === 'function') {
+      window.__pjaxOnLeave(function() {
+        window.removeEventListener('scroll', onCommentsScroll);
       });
+    }
+    
+    // 点击跳转到评论 — 优先使用 Lenis 平滑滚动
+    goToCommentsBtn.addEventListener('click', function() {
+      if (window.__lenis) {
+        window.__lenis.scrollTo(commentsSection, { offset: 0 });
+      } else {
+        window.scrollTo({
+          top: commentsSection.offsetTop,
+          behavior: 'smooth'
+        });
+      }
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPost);
+} else {
+  initPost();
+}
+
+
+// 分享功能
+function initPostShare() {
+  const shareContainer = document.querySelector('.post-share');
+  if (!shareContainer) return;
+  
+  const title = shareContainer.dataset.title || document.title;
+  // 如果是相对路径，转换为完整 URL
+  let url = shareContainer.dataset.url || window.location.href;
+  if (url && !url.startsWith('http')) {
+    url = window.location.origin + url;
+  }
+  
+  // 复制链接
+  const copyBtn = shareContainer.querySelector('.share-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        copyBtn.classList.add('copied');
+        setTimeout(() => copyBtn.classList.remove('copied'), 2000);
+      } catch (err) {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        copyBtn.classList.add('copied');
+        setTimeout(() => copyBtn.classList.remove('copied'), 2000);
+      }
+    });
+  }
+  
+  // QQ分享
+  const qqBtn = shareContainer.querySelector('.share-qq');
+  if (qqBtn) {
+    qqBtn.addEventListener('click', () => {
+      const qqUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+      window.open(qqUrl, '_blank', 'width=600,height=500');
+    });
+  }
+  
+  // 微博分享
+  const weiboBtn = shareContainer.querySelector('.share-weibo');
+  if (weiboBtn) {
+    weiboBtn.addEventListener('click', () => {
+      const weiboUrl = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+      window.open(weiboUrl, '_blank', 'width=600,height=500');
+    });
+  }
+  
+  // 微信二维码 - 悬停时生成
+  const wechatBtn = shareContainer.querySelector('.share-wechat');
+  const qrcodeContainer = document.getElementById('wechatQrcode');
+  
+  if (wechatBtn && qrcodeContainer) {
+    let qrcodeGenerated = false;
+    
+    wechatBtn.addEventListener('mouseenter', () => {
+      if (!qrcodeGenerated) {
+        const qrImg = document.createElement('img');
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}`;
+        qrImg.alt = '微信扫码分享';
+        qrcodeContainer.appendChild(qrImg);
+        qrcodeGenerated = true;
+      }
+    });
+    
+    // 阻止按钮点击事件
+    wechatBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPostShare);
+} else {
+  initPostShare();
+}

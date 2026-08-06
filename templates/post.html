@@ -2,8 +2,8 @@
 <!--
   Theme: theme-Serenity
   Author: Serenity
-  Build: 2026-07-10 21:20:49
-  Fingerprint: 821f517d56c40c00
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
   Copyright (c) 2026 Serenity. All rights reserved.
 -->
 
@@ -11,39 +11,159 @@
       th:replace="~{modules/layout :: html(title = ${post != null and post.spec != null ? post.spec.title : '文章详情'}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/post-page.css}" />
-  <script th:src="@{/assets/js/post.js}" defer></script>
-</th:block>
-<head>
-  <script th:if="${theme.config.seo != null && (theme.config.seo.enableJsonLd == null || theme.config.seo.enableJsonLd)}" type="application/ld+json" th:inline="javascript">
+  <link rel="canonical" th:href="${site.url + post.status.permalink}" />
+  <!-- 文章的 Open Graph 覆盖 -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" th:content="${post.spec.title}" />
+  <meta property="og:description" th:content="${post.status.excerpt ?: (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle)}" />
+  <meta property="og:url" th:content="${site.url + post.status.permalink}" />
+  <meta property="og:image" th:if="${post.spec.cover != null && !#strings.isEmpty(post.spec.cover)}" th:content="${post.spec.cover}" />
+  <meta property="article:published_time" th:if="${post.spec.publishTime}" th:content="${post.spec.publishTime}" />
+  <meta property="article:modified_time" th:if="${post.status.lastModifyTime}" th:content="${post.status.lastModifyTime}" />
+  <meta property="article:author" th:content="${post.owner != null ? post.owner.displayName : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : 'Author')}" />
+  <th:block th:if="${post.tags != null}" th:each="tag : ${post.tags}">
+    <meta property="article:tag" th:content="${tag.spec.displayName}" />
+  </th:block>
+  <th:block th:if="${post.categories != null && !#lists.isEmpty(post.categories)}">
+    <meta property="article:section" th:content="${post.categories[0].spec.displayName}" />
+  </th:block>
+  <!-- Twitter Card 大图 -->
+  <meta name="twitter:card" th:content="${post.spec.cover != null && !#strings.isEmpty(post.spec.cover) ? 'summary_large_image' : 'summary'}" />
+  <meta name="twitter:title" th:content="${post.spec.title}" />
+  <meta name="twitter:description" th:content="${post.status.excerpt ?: (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle)}" />
+  <meta name="twitter:image" th:if="${post.spec.cover != null && !#strings.isEmpty(post.spec.cover)}" th:content="${post.spec.cover}" />
+  <script th:if="${theme.config.seo != null && theme.config.seo.seoConfig != null && (theme.config.seo.seoConfig.enableJsonLd == null || theme.config.seo.seoConfig.enableJsonLd)}" type="application/ld+json" th:inline="javascript">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": /*[[${site.url + post.status.permalink}]]*/ ""
+    },
     "headline": /*[[${post.spec.title}]]*/ "",
     "description": /*[[${post.status.excerpt}]]*/ "",
     "image": /*[[${post.spec.cover}]]*/ "",
+    "url": /*[[${site.url + post.status.permalink}]]*/ "",
     "datePublished": /*[[${post.spec.publishTime}]]*/ "",
     "dateModified": /*[[${post.status.lastModifyTime}]]*/ "",
     "author": {
       "@type": "Person",
-      "name": /*[[${post.owner.displayName ?: theme.config.basic.author}]]*/ ""
+      "name": /*[[${post.owner.displayName ?: (theme.config.basic != null and theme.config.basic.siteInfo != null ? theme.config.basic.siteInfo.author : 'Author')}]]*/ ""
     },
     "publisher": {
       "@type": "Organization",
       "name": /*[[${site.title}]]*/ "",
       "logo": {
         "@type": "ImageObject",
-        "url": /*[[${theme.config.hero.avatar}]]*/ ""
+        "url": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-Serenity/assets/public/logo.webp'}]]*/ ""
       }
     }
   }
   </script>
-</head>
+  <script th:if="${theme.config.seo != null && theme.config.seo.seoConfig != null && (theme.config.seo.seoConfig.enableJsonLd == null || theme.config.seo.seoConfig.enableJsonLd)}" type="application/ld+json" th:inline="javascript">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title}]]*/ "首页",
+        "item": /*[[${site.url}]]*/ ""
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": /*[[${post.spec.title}]]*/ ""
+      }
+    ]
+  }
+  </script>
+</th:block>
 <th:block th:fragment="content">
+  <!-- PJAX：页面脚本与服务端注入变量置于 content 内，随局部刷新重新执行 -->
+  <!-- 文章页滚动条：根据设置动态添加 class，PJAX 离场时移除 -->
+  <script th:if="${theme.config.post != null and theme.config.post.scrollbarConfig != null and theme.config.post.scrollbarConfig.showScrollbar == true}">
+    document.documentElement.classList.add('show-scrollbar');
+    if (typeof window.__pjaxOnLeave === 'function') {
+      window.__pjaxOnLeave(function () {
+        document.documentElement.classList.remove('show-scrollbar');
+      });
+    }
+  </script>
+  <script th:src="@{/assets/js/lightbox.js}" defer></script>
+  <script th:inline="javascript">window.__showHeadingIcons = /*[[${theme.config.post != null && theme.config.post.headingIconsConfig != null && theme.config.post.headingIconsConfig.showHeadingIcons != null ? theme.config.post.headingIconsConfig.showHeadingIcons : true}]]*/ true;</script>
+  <script th:src="@{/assets/js/post.js}" defer></script>
+  <script th:src="@{/assets/js/tag-sphere.js}" defer></script>
+  <!-- 阅读进度条 -->
+  <div class="reading-progress-bar" id="reading-progress-bar"></div>
+
+  <!-- 背景壁纸 -->
+  <th:block th:if="${theme.config.post != null and theme.config.post.backgroundConfig != null and theme.config.post.backgroundConfig.enableBackground}">
+    <div class="post-bg-wallpaper" 
+         th:style="'--blur: ' + ${theme.config.post.backgroundConfig.backgroundBlur != null ? theme.config.post.backgroundConfig.backgroundBlur : 3} + 'px'">
+      <img id="bg-wallpaper-img" alt="背景壁纸" 
+           th:data-api="${theme.config.post.backgroundConfig.backgroundApi ?: 'https://api.elaina.cat/random'}"
+           th:data-api-mobile="${theme.config.post.backgroundConfig.backgroundApiMobile}" />
+    </div>
+    <script th:inline="javascript">
+      (function() {
+        var img = document.getElementById('bg-wallpaper-img');
+        if (!img) return;
+        
+        var api = img.getAttribute('data-api');
+        var apiMobile = img.getAttribute('data-api-mobile');
+        var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        var currentApi = isMobile && apiMobile ? apiMobile : api;
+
+        var STORAGE_KEY = 'serenity_wallpaper_url';
+        var sessionKey = 'serenity_wallpaper_session';
+
+        var cachedUrl = localStorage.getItem(STORAGE_KEY);
+        var currentSession = sessionStorage.getItem(sessionKey);
+
+        var finalUrl = (cachedUrl && currentSession) ? cachedUrl : currentApi;
+        
+        function markLoaded() {
+          img.classList.add('loaded');
+          document.body.classList.add('has-bg-wallpaper');
+
+          if (!cachedUrl && img.src && img.src.startsWith('http')) {
+            localStorage.setItem(STORAGE_KEY, img.src);
+            sessionStorage.setItem(sessionKey, 'true');
+          }
+        }
+
+        if (typeof window.__pjaxOnLeave === 'function') {
+          window.__pjaxOnLeave(function () {
+            document.body.classList.remove('has-bg-wallpaper');
+          });
+        }
+
+        img.onload = markLoaded;
+
+        img.onerror = function() {
+          if (finalUrl !== currentApi) {
+            img.src = currentApi;
+          }
+        };
+
+        img.decoding = 'async';
+        img.loading = 'eager';
+        img.src = finalUrl;
+
+        if (img.complete && img.naturalWidth > 0) {
+          markLoaded();
+        }
+      })();
+    </script>
+  </th:block>
+
   <div class="container">
     <!-- 文章封面头部 -->
     <div class="post-hero" th:with="hasCover = ${post.spec.cover != null and not #strings.isEmpty(post.spec.cover)}">
       <div class="post-hero-bg" th:if="${hasCover}">
-        <img th:src="${post.spec.cover}" th:alt="${post.spec.title}" alt="封面图" />
+        <img th:src="${post.spec.cover}" th:alt="${post.spec.title}" alt="封面" />
         <div class="post-hero-overlay"></div>
       </div>
       <div class="post-hero-bg post-hero-bg-default" th:unless="${hasCover}">
@@ -53,8 +173,8 @@
         <h1 class="post-hero-title" th:text="${post.spec.title}">文章标题</h1>
         <div class="post-hero-meta">
           <span class="post-hero-author" th:if="${post.owner != null}">
-            <img th:src="${theme.config.hero.avatar ?: '/themes/theme-Serenity/assets/public/ics6.webp'}" alt="" class="post-hero-avatar" />
-            <span th:text="${post.owner.displayName ?: theme.config.basic.author ?: 'Author'}">作者</span>
+            <img th:src="${post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp')}" alt="" class="post-hero-avatar" />
+            <span th:text="${post.owner.displayName ?: (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : 'Author')}">作者</span>
           </span>
           <span class="post-hero-date" th:if="${post.spec.publishTime}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -73,7 +193,7 @@
       <!-- 右下角分类和标签 -->
       <div class="post-hero-tags">
         <a class="post-hero-category-link" th:if="${post.categories != null and not #lists.isEmpty(post.categories)}" 
-           th:href="@{'/categories/' + ${post.categories[0].metadata.name}}">
+           th:href="${post.categories[0].status.permalink}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           <span th:text="${post.categories[0].spec.displayName}">分类</span>
         </a>
@@ -86,11 +206,13 @@
       </div>
     </div>
 
-    <div class="post-layout">
+    <div class="post-layout" th:classappend="${theme.config.post != null && theme.config.post.backgroundConfig != null && theme.config.post.backgroundConfig.enableBackground} ? 'has-bg-wallpaper' : ''">
       <div class="post-main">
-        <article class="post">
+        <article class="post" th:classappend="${theme.config.post != null && theme.config.post.backgroundConfig != null && theme.config.post.backgroundConfig.enableBackground} ? 'has-wallpaper-bg' : ''">
+          <!-- 模糊背景容器 - 放在 article 内部 -->
+          <div class="wallpaper-bg-container" th:if="${theme.config.post != null && theme.config.post.backgroundConfig != null && theme.config.post.backgroundConfig.enableBackground}"></div>
           <!-- 文章过期提示 -->
-          <div class="post-outdated-notice" id="post-outdated-notice" th:data-publish-time="${post.spec.publishTime}" style="display: none;">
+          <div class="post-outdated-notice" id="post-outdated-notice" th:if="${theme.config.post == null || theme.config.post.outdatedNoticeConfig == null || theme.config.post.outdatedNoticeConfig.showOutdatedNotice == null || theme.config.post.outdatedNoticeConfig.showOutdatedNotice}" th:data-publish-time="${post.spec.publishTime}" style="display: none;">
             <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <line x1="12" y1="8" x2="12" y2="12"/>
@@ -104,11 +226,11 @@
             <p th:unless="${post.content != null and post.content.content != null}">文章内容加载中...</p>
           </div>
 
-          <div class="post-copyright" th:if="${theme.config.post == null || theme.config.post.showCopyright == null || theme.config.post.showCopyright}">
+          <div class="post-copyright" th:if="${theme.config.post == null || theme.config.post.copyrightConfig == null || theme.config.post.copyrightConfig.showCopyright == null || theme.config.post.copyrightConfig.showCopyright}">
             <div class="copyright-content">
               <div class="copyright-header">
                 <span class="copyright-badge">原创</span>
-                <h3 class="copyright-title" th:text="${post.spec.title}">探索 Next.js 14 的新特性与最佳实践</h3>
+                <h2 class="copyright-title" th:text="${post.spec.title}">探索 Next.js 14 的新特性与最佳实践</h2>
               </div>
               <div class="copyright-meta">
                 <span class="copyright-label">本文链接：</span>
@@ -118,9 +240,8 @@
                 </svg>
                 <a th:href="@{${post.status.permalink}}" class="copyright-link" th:text="${post.spec.title}">探索 Next.js 14 的新特性与最佳实践</a>
               </div>
-              <p class="copyright-text" th:utext="${theme.config.post != null && theme.config.post.copyrightText != null ? theme.config.post.copyrightText : '本文采用 &lt;a href=&quot;https://creativecommons.org/licenses/by-nc-sa/4.0/&quot; target=&quot;_blank&quot; class=&quot;copyright-license&quot;&gt;CC BY-NC-SA 4.0&lt;/a&gt; 协议，转载请注明出处。'}">
-                本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="copyright-license">CC BY-NC-SA 4.0</a> 协议，转载请注明出处。
-              </p>
+              <p class="copyright-text" th:utext="${theme.config.post != null && theme.config.post.copyrightConfig != null && theme.config.post.copyrightConfig.copyrightText != null ? theme.config.post.copyrightConfig.copyrightText : '本文采用 &lt;a href=&quot;https://creativecommons.org/licenses/by-nc-sa/4.0/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; class=&quot;copyright-license&quot;&gt;CC BY-NC-SA 4.0&lt;/a&gt; 协议，转载请注明出处。'}">
+                本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer" class="copyright-license">CC BY-NC-SA 4.0</a> 协议，转载请注明出处。              </p>
             </div>
             <div class="copyright-logo">
               <svg viewBox="0 0 100 100" fill="none">
@@ -130,13 +251,55 @@
             </div>
           </div>
 
-          <div class="post-reward" th:if="${theme.config.post != null && theme.config.post.showReward && theme.config.post.rewardQrCode != null && !#strings.isEmpty(theme.config.post.rewardQrCode)}">
+          <!-- 分享按钮 -->
+          <div class="post-share" th:if="${theme.config.post == null || theme.config.post.shareConfig == null || theme.config.post.shareConfig.showShare == null || theme.config.post.shareConfig.showShare}"
+               th:data-title="${post.spec.title}"
+               th:data-url="${post.status.permalink}">
+            <span class="share-label">分享：</span>
+            <div class="share-buttons">
+              <button class="share-btn share-copy" data-action="copy" title="复制链接" aria-label="复制链接">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="share-copy-bubble">复制成功</span>
+              </button>
+              <button class="share-btn share-wechat" data-action="wechat" title="微信扫码分享" aria-label="微信扫码分享">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M11.176 14.429c-2.665 0-4.826-1.8-4.826-4.018 0-2.22 2.159-4.02 4.824-4.02S16 8.191 16 10.411c0 1.21-.65 2.301-1.666 3.036a.32.32 0 0 0-.12.366l.218.81a.6.6 0 0 1 .029.117.166.166 0 0 1-.162.162.2.2 0 0 1-.092-.03l-1.057-.61a.5.5 0 0 0-.256-.074.5.5 0 0 0-.142.021 5.7 5.7 0 0 1-1.576.22M9.064 9.542a.647.647 0 1 0 .557-1 .645.645 0 0 0-.646.647.6.6 0 0 0 .09.353Zm3.232.001a.646.646 0 1 0 .546-1 .645.645 0 0 0-.644.644.63.63 0 0 0 .098.356"/>
+                  <path d="M0 6.826c0 1.455.781 2.765 2.001 3.656a.385.385 0 0 1 .143.439l-.161.6-.1.373a.5.5 0 0 0-.032.14.19.19 0 0 0 .193.193q.06 0 .111-.029l1.268-.733a.6.6 0 0 1 .308-.088q.088 0 .171.025a6.8 6.8 0 0 0 1.625.26 4.5 4.5 0 0 1-.177-1.251c0-2.936 2.785-5.02 5.824-5.02l.15.002C10.587 3.429 8.392 2 5.796 2 2.596 2 0 4.16 0 6.826m4.632-1.555a.77.77 0 1 1-1.54 0 .77.77 0 0 1 1.54 0m3.875 0a.77.77 0 1 1-1.54 0 .77.77 0 0 1 1.54 0"/>
+                </svg>
+                <!-- 微信二维码悬浮弹窗 -->
+                <div class="serenity-popup serenity-popup--top serenity-popup--wechat" id="wechatPopup">
+                  <div class="serenity-popup__qrcode" id="wechatQrcode"></div>
+                  <div class="serenity-popup__content">
+                    <p class="serenity-popup__title">微信扫码分享</p>
+                    <p class="serenity-popup__text">打开微信扫一扫，分享给好友</p>
+                  </div>
+                </div>
+              </button>
+              <button class="share-btn share-weibo" data-action="weibo" title="分享到微博" aria-label="分享到微博">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M10.878 1.093a4.23 4.23 0 0 1 4.031 1.305 4.22 4.22 0 0 1 .886 4.14v.001a.612.612 0 0 1-1.166-.377 3.01 3.01 0 0 0-3.495-3.873.611.611 0 1 1-.256-1.196M3.753 9.465c.548-1.11 1.972-1.74 3.233-1.411 1.304.338 1.971 1.568 1.437 2.764-.541 1.221-2.095 1.875-3.416 1.449-1.271-.411-1.812-1.67-1.254-2.802m2.658.567c.16.066.365-.009.458-.168.088-.16.03-.34-.129-.397-.156-.062-.353.013-.446.168-.09.154-.041.333.117.397m-1.607 1.314c.413.188.963.009 1.219-.4.252-.413.12-.883-.296-1.062-.41-.172-.94.005-1.194.402-.256.4-.135.874.271 1.06"/>
+                  <path d="m12.014 7.238.005.001c.919.285 1.941.974 1.939 2.188 0 2.007-2.895 4.535-7.246 4.535C3.393 13.962 0 12.352 0 9.708c0-1.385.876-2.985 2.384-4.493C4.4 3.199 6.751 2.28 7.634 3.165c.39.392.427 1.065.177 1.87-.132.405.38.182.38.182 1.63-.682 3.051-.722 3.57.02.278.397.252.951-.004 1.594-.116.293.035.34.257.407m-10.4 3.101c.172 1.738 2.46 2.936 5.109 2.674 2.647-.26 4.656-1.883 4.482-3.623-.17-1.738-2.458-2.937-5.107-2.674-2.647.263-4.656 1.883-4.484 3.623m11.681-6.484a2.06 2.06 0 0 0-1.962-.634.526.526 0 1 0 .219 1.031 1.008 1.008 0 0 1 1.17 1.296.528.528 0 0 0 1.005.325 2.06 2.06 0 0 0-.432-2.018"/>
+                </svg>
+              </button>
+              <button class="share-btn share-qq" data-action="qq" title="分享到QQ" aria-label="分享到QQ">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M6.048 3.323c.022.277-.13.523-.338.55-.21.026-.397-.176-.419-.453s.13-.523.338-.55c.21-.026.397.176.42.453Zm2.265-.24c-.603-.146-.894.256-.936.333-.027.048-.008.117.037.15.045.035.092.025.119-.003.361-.39.751-.172.829-.129l.011.007c.053.024.147.028.193-.098.023-.063.017-.11-.006-.142-.016-.023-.089-.08-.247-.118"/>
+                  <path d="M11.727 6.719c0-.022.01-.375.01-.557 0-3.07-1.45-6.156-5.015-6.156S1.708 3.092 1.708 6.162c0 .182.01.535.01.557l-.72 1.795a26 26 0 0 0-.534 1.508c-.68 2.187-.46 3.093-.292 3.113.36.044 1.401-1.647 1.401-1.647 0 .979.504 2.256 1.594 3.179-.408.126-.907.319-1.228.556-.29.213-.253.43-.201.518.228.386 3.92.246 4.985.126 1.065.12 4.756.26 4.984-.126.052-.088.088-.305-.2-.518-.322-.237-.822-.43-1.23-.557 1.09-.922 1.594-2.2 1.594-3.178 0 0 1.041 1.69 1.401 1.647.168-.02.388-.926-.292-3.113a26 26 0 0 0-.534-1.508l-.72-1.795ZM9.773 5.53a.1.1 0 0 1-.009.096c-.109.159-1.554.943-3.033.943h-.017c-1.48 0-2.925-.784-3.034-.943a.1.1 0 0 1-.018-.055q0-.022.01-.04c.13-.287 1.43-.606 3.042-.606h.017c1.611 0 2.912.319 3.042.605m-4.32-.989c-.483.022-.896-.529-.922-1.229s.344-1.286.828-1.308c.483-.022.896.529.922 1.23.027.7-.344 1.286-.827 1.307Zm2.538 0c-.484-.022-.854-.607-.828-1.308.027-.7.44-1.25.923-1.23.483.023.853.608.827 1.309-.026.7-.439 1.251-.922 1.23ZM2.928 8.99q.32.063.639.117v2.336s1.104.222 2.21.068V9.363q.49.027.937.023h.017c1.117.013 2.474-.136 3.786-.396.097.622.151 1.386.097 2.284-.146 2.45-1.6 3.99-3.846 4.012h-.091c-2.245-.023-3.7-1.562-3.846-4.011-.054-.9 0-1.663.097-2.285"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="post-reward" th:if="${theme.config.post != null && theme.config.post.rewardConfig != null && theme.config.post.rewardConfig.showReward && theme.config.post.rewardConfig.rewardQrCode != null && !#strings.isEmpty(theme.config.post.rewardConfig.rewardQrCode)}">
             <div class="reward-qrcode">
-              <img th:src="${theme.config.post.rewardQrCode}" alt="打赏二维码" loading="lazy" />
+              <img th:src="${theme.config.post.rewardConfig.rewardQrCode}" alt="打赏二维码" loading="lazy" />
             </div>
             <div class="reward-content">
-              <h3 class="reward-title" th:text="${theme.config.post.rewardTitle ?: '赞赏支持'}">赞赏支持</h3>
-              <p class="reward-text" th:text="${theme.config.post.rewardText ?: '如果觉得文章对你有帮助，可以请作者喝杯咖啡 ☕'}">如果觉得文章对你有帮助，可以请作者喝杯咖啡 ☕</p>
+              <h2 class="reward-title" th:text="${theme.config.post.rewardConfig.rewardTitle ?: '赞赏支持'}">赞赏支持</h2>
+              <p class="reward-text" th:text="${theme.config.post.rewardConfig.rewardText ?: '如果觉得文章对你有帮助，可以请作者喝杯咖啡☕'}">如果觉得文章对你有帮助，可以请作者喝杯咖啡☕</p>
               <div class="reward-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -155,31 +318,60 @@
 
           <nav class="post-nav" th:with="postCursor = ${postFinder.cursor(post.metadata.name)}">
             <a th:if="${postCursor.hasNext()}" th:href="@{${postCursor.next.status.permalink}}" class="post-nav-item prev">
-              <span class="post-nav-label">上一篇</span>
-              <span class="post-nav-title" th:text="${postCursor.next.spec.title}">上一篇文章</span>
+              <div class="post-nav-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </div>
+              <div class="post-nav-content">
+                <span class="post-nav-label">上一篇</span>
+                <span class="post-nav-title" th:text="${postCursor.next.spec.title}">上一篇文章</span>
+              </div>
             </a>
             <span th:unless="${postCursor.hasNext()}" class="post-nav-item prev post-nav-empty">
-              <span class="post-nav-label">上一篇</span>
-              <span class="post-nav-title">再往上就没有最新的文章了喔~</span>
+              <div class="post-nav-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </div>
+              <div class="post-nav-content">
+                <span class="post-nav-label">上一篇</span>
+                <span class="post-nav-title">已经是最新文章啦~</span>
+              </div>
             </span>
             <a th:if="${postCursor.hasPrevious()}" th:href="@{${postCursor.previous.status.permalink}}" class="post-nav-item next">
-              <span class="post-nav-label">下一篇</span>
-              <span class="post-nav-title" th:text="${postCursor.previous.spec.title}">下一篇文章</span>
+              <div class="post-nav-content">
+                <span class="post-nav-label">下一篇</span>
+                <span class="post-nav-title" th:text="${postCursor.previous.spec.title}">下一篇文章</span>
+              </div>
+              <div class="post-nav-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </div>
             </a>
             <span th:unless="${postCursor.hasPrevious()}" class="post-nav-item next post-nav-empty">
-              <span class="post-nav-label">下一篇</span>
-              <span class="post-nav-title">再往下就没有更多文章了喔~</span>
+              <div class="post-nav-content">
+                <span class="post-nav-label">下一篇</span>
+                <span class="post-nav-title">已经是最后一篇啦~</span>
+              </div>
+              <div class="post-nav-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </div>
             </span>
           </nav>
 
           <div class="post-comments" id="post-comments" th:if="${haloCommentEnabled}">
             <div class="comments-header">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
               </svg>
-              <h3 class="comments-title">评论</h3>
+              <h2 class="comments-title">评论交流</h2>
+              <span class="comments-subtitle">欢迎留下你的想法</span>
             </div>
-            <halo:comment group="content.halo.run" kind="Post" th:attr="name=${post.metadata.name}" />
+            <halo:comment group="content.halo.run" kind="Post" th:attr="name=${post.metadata.name}" colorScheme="auto" />
           </div>
         </article>
       </div>
@@ -201,7 +393,10 @@
                   </nav>
                 </div>
 
-                <div th:if="${item.component == 'author' && item.enabled}" class="sidebar-widget" th:with="siteStats = ${siteStatsFinder.getStats()}">
+                <div th:if="${item.component == 'author' && item.enabled}" class="sidebar-widget" 
+                     th:with="ownerName = ${post.owner != null ? post.owner.name : null},
+                              authorPosts = ${ownerName != null ? postFinder.listByOwner(1, 1000, ownerName) : null},
+                              siteStats = ${siteStatsFinder.getStats()}">
                   <div class="widget-header">
                     <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -212,26 +407,41 @@
                   </div>
                   <div class="widget-author">
                     <img class="author-avatar" 
-                         th:src="${theme.config.hero.avatar} ?: (${theme.config.basic.logo} ?: '/themes/theme-Serenity/assets/public/ics6.webp')" 
-                         th:alt="${theme.config.basic.author}" />
+                         th:src="${post.owner != null && post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp')}" 
+                         th:alt="${post.owner != null ? post.owner.displayName : (theme.config.basic != null and theme.config.basic.siteInfo != null ? theme.config.basic.siteInfo.author : 'Author')}" />
                     <div class="author-info">
-                      <h4 class="author-name" th:text="${theme.config.basic.author} ?: 'Administrator'">Administrator</h4>
-                      <p class="author-bio" th:text="${theme.config.basic.description} ?: '暂无简介'">暂无简介</p>
+                      <a class="author-name-link" th:href="@{/about}" href="/about">
+                        <h4 class="author-name" th:text="${post.owner != null ? post.owner.displayName : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : 'Administrator')}">Administrator</h4>
+                        <span class="author-hover-icon">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <path d="M2 8h20"/>
+                            <path d="M12 12v8"/>
+                          </svg>
+                        </span>
+                      </a>
+                      <p class="author-bio" th:text="${post.owner != null && post.owner.bio != null && !#strings.isEmpty(post.owner.bio) ? post.owner.bio : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : '暂无简介')}">暂无简介</p>
                     </div>
                     <div class="author-stats">
                       <div class="stat-item">
-                        <span class="stat-value" th:text="${siteStats.post ?: 0}">0</span>
+                        <span class="stat-value" th:text="${authorPosts != null ? authorPosts.total : 0}">0</span>
                         <span class="stat-label">文章</span>
                       </div>
-                      <div class="stat-item">
-                        <span class="stat-value" th:text="${siteStats.visit ?: 0}">0</span>
+                      <div class="stat-item" th:with="visitSum = ${authorPosts != null && authorPosts.items != null ? #aggregates.sum(authorPosts.items.![stats?.visit ?: 0]) : (siteStats.visit ?: 0)}">
+                        <span class="stat-value" th:text="${visitSum}">0</span>
                         <span class="stat-label">访问</span>
                       </div>
                     </div>
+                    <a class="author-hover-overlay" th:href="@{/about}" href="/about" title="查看作者介绍" aria-label="查看作者介绍">
+                      <svg t="1772421730895" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9964" width="48" height="48">
+                        <path d="M539.194 566.388 212.864 566.388c-15.032 0-27.195 12.19-27.195 27.19 0 15.03 12.162 27.2 27.195 27.2l326.329 0c15.03 0 27.195-12.17 27.195-27.2C566.389 578.578 554.219 566.388 539.194 566.388zM539.194 675.163 212.864 675.163c-15.032 0-27.195 12.165-27.195 27.195s12.162 27.19 27.195 27.19l326.329 0c15.03 0 27.195-12.16 27.195-27.19S554.219 675.163 539.194 675.163zM838.328 185.669 185.67 185.669c-60.072 0-108.777 48.705-108.777 108.777l0 435.101c0 60.075 48.705 108.78 108.777 108.78l652.658 0c60.07 0 108.775-48.705 108.775-108.78L947.103 294.447C947.103 234.374 898.398 185.669 838.328 185.669zM892.718 729.548c0 30.04-24.355 54.39-54.39 54.39L185.67 783.938c-30.037 0-54.39-24.35-54.39-54.39L131.28 294.447c0-30.035 24.352-54.39 54.39-54.39l652.658 0c30.035 0 54.39 24.352 54.39 54.39L892.718 729.548zM783.938 294.447 675.163 294.447c-30.035 0-54.39 24.352-54.39 54.387l0 108.777c0 30.035 24.355 54.387 54.39 54.387l108.775 0c30.04 0 54.39-24.35 54.39-54.387L838.328 348.834C838.328 318.799 813.978 294.447 783.938 294.447zM783.938 430.416c0 15.03-12.16 27.195-27.19 27.195l-54.39 0c-15.03 0-27.195-12.165-27.195-27.195l0-54.39c0-15.005 12.165-27.195 27.195-27.195l54.39 0c15.03 0 27.19 12.19 27.19 27.195L783.938 430.416z" fill="currentColor" p-id="9965"></path>
+                      </svg>
+                      <span class="sr-only">查看作者介绍</span>
+                    </a>
                   </div>
                 </div>
 
-                <div th:if="${item.component == 'related' && item.enabled}" class="sidebar-widget" th:with="relatedCount = ${theme.config.post != null && theme.config.post.relatedCount != null ? theme.config.post.relatedCount : 3}">
+                <div th:if="${item.component == 'related' && item.enabled}" class="sidebar-widget" th:with="relatedCount = ${theme.config.post != null && theme.config.post.relatedConfig != null && theme.config.post.relatedConfig.relatedCount != null ? theme.config.post.relatedConfig.relatedCount : 3}">
                   <div class="widget-header">
                     <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -249,9 +459,9 @@
                       </li>
                     </th:block>
                     <th:block th:if="${#lists.isEmpty(postFinder.list(1, relatedCount).items)}">
-                      <li><a href="javascript:void(0)">React Server Components 深入理解</a></li>
-                      <li><a href="javascript:void(0)">TypeScript 5.0 新特性详解</a></li>
-                      <li><a href="javascript:void(0)">Tailwind CSS 构建 UI 组件</a></li>
+                      <li><span class="widget-link-placeholder">React Server Components 深入理解</span></li>
+                      <li><span class="widget-link-placeholder">TypeScript 5.0 新特性详解</span></li>
+                      <li><span class="widget-link-placeholder">Tailwind CSS 构建 UI 组件</span></li>
                     </th:block>
                   </ul>
                 </div>
@@ -265,7 +475,7 @@
                     <span class="widget-divider"></span>
                     <span class="widget-title">热门标签</span>
                   </div>
-                  <div class="widget-tags">
+                  <div class="widget-tags widget-tags-sphere">
                     <th:block th:if="${not #lists.isEmpty(tagFinder.listAll())}">
                       <a th:each="tag : ${tagFinder.listAll()}" 
                          th:href="@{${tag.status.permalink}}" 
@@ -273,14 +483,12 @@
                          th:text="${tag.spec.displayName}">标签</a>
                     </th:block>
                     <th:block th:if="${#lists.isEmpty(tagFinder.listAll())}">
-                      <a href="#" class="widget-tag">JavaScript</a>
-                      <a href="#" class="widget-tag">React</a>
-                      <a href="#" class="widget-tag">Vue</a>
-                      <a href="#" class="widget-tag">TypeScript</a>
-                      <a href="#" class="widget-tag">CSS</a>
-                      <a href="#" class="widget-tag">Node.js</a>
+                      <span class="widget-tag" style="opacity:0.5;cursor:default;">暂无标签</span>
                     </th:block>
                   </div>
+                  <a th:if="${#lists.size(tagFinder.listAll()) > 6}" th:href="@{/tags}" class="widget-tags-more">
+                    查看更多 <span>&gt;</span>
+                  </a>
                 </div>
               </th:block>
             </th:block>
@@ -299,7 +507,10 @@
                 </nav>
               </div>
 
-              <div class="sidebar-widget" th:with="siteStats = ${siteStatsFinder.getStats()}">
+              <div class="sidebar-widget" 
+                   th:with="ownerName = ${post.owner != null ? post.owner.name : null},
+                            authorPosts = ${ownerName != null ? postFinder.listByOwner(1, 1000, ownerName) : null},
+                            siteStats = ${siteStatsFinder.getStats()}">
                 <div class="widget-header">
                   <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -310,26 +521,41 @@
                 </div>
                 <div class="widget-author">
                   <img class="author-avatar" 
-                       th:src="${theme.config.hero.avatar} ?: (${theme.config.basic.logo} ?: '/themes/theme-Serenity/assets/public/ics6.webp')" 
-                       th:alt="${theme.config.basic.author}" />
+                       th:src="${post.owner != null && post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp')}" 
+                       th:alt="${post.owner != null ? post.owner.displayName : theme.config.basic.siteInfo.author}" />
                   <div class="author-info">
-                    <h4 class="author-name" th:text="${theme.config.basic.author} ?: 'Administrator'">Administrator</h4>
-                    <p class="author-bio" th:text="${theme.config.basic.description} ?: '暂无简介'">暂无简介</p>
+                    <a class="author-name-link" th:href="@{/about}" href="/about">
+                      <h4 class="author-name" th:text="${post.owner != null ? post.owner.displayName : (theme.config.basic.siteInfo.author ?: 'Administrator')}">Administrator</h4>
+                      <span class="author-hover-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="2" y="4" width="20" height="16" rx="2"/>
+                          <path d="M2 8h20"/>
+                          <path d="M12 12v8"/>
+                        </svg>
+                      </span>
+                    </a>
+                    <p class="author-bio" th:text="${post.owner != null && post.owner.bio != null && !#strings.isEmpty(post.owner.bio) ? post.owner.bio : (theme.config.basic.siteInfo.description ?: '暂无简介')}">暂无简介</p>
                   </div>
                   <div class="author-stats">
                     <div class="stat-item">
-                      <span class="stat-value" th:text="${siteStats.post ?: 0}">0</span>
+                      <span class="stat-value" th:text="${authorPosts != null ? authorPosts.total : 0}">0</span>
                       <span class="stat-label">文章</span>
                     </div>
-                    <div class="stat-item">
-                      <span class="stat-value" th:text="${siteStats.visit ?: 0}">0</span>
+                    <div class="stat-item" th:with="visitSum = ${authorPosts != null && authorPosts.items != null ? #aggregates.sum(authorPosts.items.![stats?.visit ?: 0]) : (siteStats.visit ?: 0)}">
+                      <span class="stat-value" th:text="${visitSum}">0</span>
                       <span class="stat-label">访问</span>
                     </div>
                   </div>
+                  <a class="author-hover-overlay" th:href="@{/about}" href="/about" title="查看作者介绍" aria-label="查看作者介绍">
+                    <svg t="1772421730895" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9964" width="48" height="48">
+                      <path d="M539.194 566.388 212.864 566.388c-15.032 0-27.195 12.19-27.195 27.19 0 15.03 12.162 27.2 27.195 27.2l326.329 0c15.03 0 27.195-12.17 27.195-27.2C566.389 578.578 554.219 566.388 539.194 566.388zM539.194 675.163 212.864 675.163c-15.032 0-27.195 12.165-27.195 27.195s12.162 27.19 27.195 27.19l326.329 0c15.03 0 27.195-12.16 27.195-27.19S554.219 675.163 539.194 675.163zM838.328 185.669 185.67 185.669c-60.072 0-108.777 48.705-108.777 108.777l0 435.101c0 60.075 48.705 108.78 108.777 108.78l652.658 0c60.07 0 108.775-48.705 108.775-108.78L947.103 294.447C947.103 234.374 898.398 185.669 838.328 185.669zM892.718 729.548c0 30.04-24.355 54.39-54.39 54.39L185.67 783.938c-30.037 0-54.39-24.35-54.39-54.39L131.28 294.447c0-30.035 24.352-54.39 54.39-54.39l652.658 0c30.035 0 54.39 24.352 54.39 54.39L892.718 729.548zM783.938 294.447 675.163 294.447c-30.035 0-54.39 24.352-54.39 54.387l0 108.777c0 30.035 24.355 54.387 54.39 54.387l108.775 0c30.04 0 54.39-24.35 54.39-54.387L838.328 348.834C838.328 318.799 813.978 294.447 783.938 294.447zM783.938 430.416c0 15.03-12.16 27.195-27.19 27.195l-54.39 0c-15.03 0-27.195-12.165-27.195-27.195l0-54.39c0-15.005 12.165-27.195 27.195-27.195l54.39 0c15.03 0 27.19 12.19 27.19 27.195L783.938 430.416z" fill="currentColor" p-id="9965"></path>
+                    </svg>
+                    <span class="sr-only">查看作者介绍</span>
+                  </a>
                 </div>
               </div>
 
-              <div class="sidebar-widget" th:with="relatedCount = ${theme.config.post != null && theme.config.post.relatedCount != null ? theme.config.post.relatedCount : 3}">
+              <div class="sidebar-widget" th:with="relatedCount = ${theme.config.post != null && theme.config.post.relatedConfig != null && theme.config.post.relatedConfig.relatedCount != null ? theme.config.post.relatedConfig.relatedCount : 3}">
                 <div class="widget-header">
                   <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -347,9 +573,9 @@
                     </li>
                   </th:block>
                   <th:block th:if="${#lists.isEmpty(postFinder.list(1, relatedCount).items)}">
-                    <li><a href="javascript:void(0)">React Server Components 深入理解</a></li>
-                    <li><a href="javascript:void(0)">TypeScript 5.0 新特性详解</a></li>
-                    <li><a href="javascript:void(0)">Tailwind CSS 构建 UI 组件</a></li>
+                    <li><span class="widget-link-placeholder">React Server Components 深入理解</span></li>
+                    <li><span class="widget-link-placeholder">TypeScript 5.0 新特性详解</span></li>
+                    <li><span class="widget-link-placeholder">Tailwind CSS 构建 UI 组件</span></li>
                   </th:block>
                 </ul>
               </div>
@@ -363,7 +589,7 @@
                   <span class="widget-divider"></span>
                   <span class="widget-title">热门标签</span>
                 </div>
-                <div class="widget-tags">
+                <div class="widget-tags widget-tags-sphere">
                   <th:block th:if="${not #lists.isEmpty(tagFinder.listAll())}">
                     <a th:each="tag : ${tagFinder.listAll()}" 
                        th:href="@{${tag.status.permalink}}" 
@@ -371,14 +597,12 @@
                        th:text="${tag.spec.displayName}">标签</a>
                   </th:block>
                   <th:block th:if="${#lists.isEmpty(tagFinder.listAll())}">
-                    <a href="#" class="widget-tag">JavaScript</a>
-                    <a href="#" class="widget-tag">React</a>
-                    <a href="#" class="widget-tag">Vue</a>
-                    <a href="#" class="widget-tag">TypeScript</a>
-                    <a href="#" class="widget-tag">CSS</a>
-                    <a href="#" class="widget-tag">Node.js</a>
+                    <span class="widget-tag" style="opacity:0.5;cursor:default;">暂无标签</span>
                   </th:block>
                 </div>
+                <a th:if="${#lists.size(tagFinder.listAll()) > 6}" th:href="@{/tags}" class="widget-tags-more">
+                  查看更多 <span>&gt;</span>
+                </a>
               </div>
             </th:block>
           </th:block>

@@ -1,0 +1,122 @@
+<!--
+  Theme: theme-Serenity
+  Author: Serenity
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
+  Copyright (c) 2026 Serenity. All rights reserved.
+-->
+﻿<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{modules/layout :: html(title = ${singlePage != null ? (singlePage.spec.title ?: '星图库') : '星图库'}, content = ~{::content}, head = ~{::head})}">
+<th:block th:fragment="head">
+  <link rel="stylesheet" th:href="@{/assets/css/star-gallery.css}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" th:content="${singlePage != null ? (singlePage.spec.title ?: '星图库') : '星图库'}" />
+  <meta property="og:description" th:content="${singlePage != null && singlePage.status.excerpt != null ? singlePage.status.excerpt : '行走在数字荒原的观测者，试图用文字与代码在万物互联的宇宙里锚定一片宁静星域。专注于前端美学、极简主义设计与去中心化星链网络探索。'}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" th:content="${singlePage != null ? (singlePage.spec.title ?: '星图库') : '星图库'}" />
+</th:block>
+<th:block th:fragment="content">
+  <main class="main">
+    <script th:src="@{/assets/js/star-gallery.js}" defer></script>
+    <div class="container">
+      <section class="star-gallery-page">
+        <div class="star-gallery-shell"
+             id="starGalleryRoot"
+             data-aos="fade-up"
+             data-aos-delay="100"
+             data-available="loading"
+             th:attr="data-default-mode=${theme.config.starGallery != null && theme.config.starGallery.galleryConfig != null && theme.config.starGallery.galleryConfig.displayMode != null ? theme.config.starGallery.galleryConfig.displayMode : 'bubble'},data-display-mode=${theme.config.starGallery != null && theme.config.starGallery.galleryConfig != null && theme.config.starGallery.galleryConfig.displayMode != null ? theme.config.starGallery.galleryConfig.displayMode : 'bubble'}">
+          <section class="star-hero-card">
+            <div class="star-hero-visual">
+              <svg class="star-orbit-svg star-orbit-back" viewBox="0 0 320 180" fill="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="starOrbitGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="currentColor" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="currentColor" stop-opacity="0.72" />
+                    <stop offset="100%" stop-color="currentColor" stop-opacity="0.2" />
+                  </linearGradient>
+                </defs>
+                <path d="M 30 90 A 130 45 0 0 1 290 90" />
+              </svg>
+              <span class="star-new-badge">SITE NEW</span>
+              <div class="star-avatar-frame">
+                <span class="star-avatar-ring"></span>
+                <img id="starProfileAvatar" class="star-profile-avatar" src="/themes/theme-Serenity/assets/public/logo.webp" alt="" />
+                <span class="star-status-ping"></span>
+                <span class="star-avatar-status">
+                  <span id="starNodeStatus">正在探测星系信号</span>
+                  <a id="starSiteUrl" class="star-primary-link" href="#" target="_blank" rel="noopener">访问星系</a>
+                </span>
+              </div>
+              <svg class="star-orbit-svg star-orbit-front" viewBox="0 0 320 180" fill="none" aria-hidden="true">
+                <path d="M 290 90 A 130 45 0 0 1 30 90" />
+                <circle r="2.5">
+                  <animateMotion path="M 290 90 A 130 45 0 0 1 30 90 A 130 45 0 0 1 290 90" dur="8s" repeatCount="indefinite" />
+                </circle>
+                <circle r="2">
+                  <animateMotion path="M 30 90 A 130 45 0 0 1 290 90 A 130 45 0 0 1 30 90" dur="8s" repeatCount="indefinite" />
+                </circle>
+              </svg>
+            </div>
+
+            <div class="star-hero-content">
+              <p id="starSiteBio">正在接收信号</p>
+            </div>
+          </section>
+
+          <div id="starPluginNotice" class="plugin-notice star-plugin-notice is-hidden" hidden>
+            <div class="plugin-notice-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+              </svg>
+            </div>
+            <h3 class="plugin-notice-title">需要安装或启动 AstraHub 星链插件</h3>
+            <p class="plugin-notice-desc">请在 Halo 后台启用 AstraHub 星链插件，并同步星图库数据。</p>
+          </div>
+
+          <section class="star-telemetry-grid" aria-label="节点遥测">
+            <div class="star-telemetry-card">
+              <span class="star-field-label">星系代号 / Home Sector</span>
+              <strong id="starConstellation">正在探测</strong>
+              <small id="starRouteCoordinate"></small>
+            </div>
+            <div class="star-telemetry-card">
+              <span class="star-field-label">星球代号 / Planet ID</span>
+              <strong id="starNodeSlug">正在接收</strong>
+              <small id="starPlanetSlot">Slot: -</small>
+            </div>
+            <div class="star-telemetry-card">
+              <span class="star-field-label">联邦签名 / Signature</span>
+              <strong id="starPublicKey">ah_pub_****</strong>
+              <small>Mutual Auto-Verified</small>
+            </div>
+            <div class="star-telemetry-card">
+              <span class="star-field-label">星图遥测 / Telemetry</span>
+              <strong><span id="starRssStatus">verified</span> / <span id="starFriendCount">0</span> galaxies</strong>
+              <small><span id="starPostCount">0</span> sectors linked</small>
+            </div>
+          </section>
+
+          <section class="star-section">
+            <div class="star-section-heading">
+              <span>星系联盟</span>
+            </div>
+            <div class="star-sectors-grid" id="starSectors"></div>
+          </section>
+
+          <section class="star-section star-timeline-section">
+            <div class="star-section-heading">
+              <span>星际资讯</span>
+              <small>Timeline</small>
+            </div>
+            <div class="star-timeline" id="starTimeline"></div>
+          </section>
+
+        </div>
+      </section>
+    </div>
+  </main>
+</th:block>
+</html>

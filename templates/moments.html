@@ -2,24 +2,31 @@
 <!--
   Theme: theme-Serenity
   Author: Serenity
-  Build: 2026-07-10 21:20:49
-  Fingerprint: 821f517d56c40c00
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
   Copyright (c) 2026 Serenity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org"
-      th:replace="~{modules/layout :: html(title = ${singlePage != null ? singlePage.spec.title : '碎碎念'}, content = ~{::content}, head = ~{::head})}">
+      th:replace="~{modules/layout :: html(title = ${(theme.config.watermark?.moments?.enabled == true ? theme.config.watermark.moments.title : null) ?: (singlePage != null ? singlePage.spec.title : '碎碎念')}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/moments.css}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" th:content="${(singlePage != null ? singlePage.spec.title : '碎碎念') + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
+  <meta property="og:description" content="记录生活中的点滴，留住那些值得回忆的瞬间" />
+  <meta name="twitter:title" th:content="${(singlePage != null ? singlePage.spec.title : '碎碎念') + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
+  <meta name="twitter:description" content="记录生活中的点滴，留住那些值得回忆的瞬间" />
 </th:block>
 <th:block th:fragment="content">
   <main class="main">
+    <!-- PJAX：页面脚本置于 content 内，随局部刷新重新执行 -->
+    <script th:src="@{/assets/js/lightbox.js}" defer></script>
     <div class="container">
-      <section class="moments-page" th:with="momentsResult = ${momentFinder != null ? momentFinder.list(1, 50) : null}">
+      <section class="moments-page" th:with="momentsResult = ${momentFinder != null ? momentFinder.list(1, 9999) : null}">
         
         <div class="moments-header" data-aos="fade-up">
-          <h1 class="moments-title" th:text="${singlePage != null ? singlePage.spec.title : '碎碎念'}">碎碎念</h1>
-          <p class="moments-subtitle">记录生活中的点滴，留住那些值得回忆的瞬间</p>
+          <h1 class="moments-title" th:text="${(theme.config.watermark?.moments?.enabled == true ? theme.config.watermark.moments.title : null) ?: (singlePage != null ? singlePage.spec.title : '碎碎念')}">碎碎念</h1>
+          <p class="moments-subtitle" th:text="${(theme.config.watermark?.moments?.enabled == true ? theme.config.watermark.moments.subtitle : null) ?: '记录生活中的点滴，留住那些值得回忆的瞬间'}">记录生活中的点滴，留住那些值得回忆的瞬间</p>
           <div class="moments-stats" th:if="${momentsResult != null}">
             <div class="moments-stat">
               <span class="moments-stat-num" th:text="${momentsResult.total}">0</span>
@@ -28,15 +35,18 @@
           </div>
         </div>
         
-        <!-- 未安装插件提示 -->
-        <div th:if="${momentFinder == null}" class="moments-empty" data-aos="fade-up">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <p>碎碎念功能需要安装「瞬间」插件</p>
+        <!-- 未安装插件提示-->
+        <div th:if="${momentFinder == null}" class="plugin-notice" data-aos="fade-up">
+          <div class="plugin-notice-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <h3 class="plugin-notice-title">碎碎念功能需要安装插件</h3>
+          <p class="plugin-notice-desc">请先安装并启用「瞬间」插件</p>
         </div>
         
-        <!-- 动态列表 -->
+        <!-- 动态列表-->
         <th:block th:if="${momentFinder != null && momentsResult != null}">
           <div class="moments-container">
             <div class="moments-list">
@@ -47,14 +57,14 @@
                      th:with="content = ${moment.spec.content}">
                   <!-- 头像 -->
                   <img class="moment-avatar" 
-                       th:src="${moment.owner != null && moment.owner.avatar != null ? moment.owner.avatar : (theme.config.hero.avatar ?: '/themes/theme-Serenity/assets/public/ics6.webp')}" 
+                       th:src="${moment.owner != null && moment.owner.avatar != null ? moment.owner.avatar : (site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp')}" 
                        alt="avatar" />
                   
                   <!-- 气泡 -->
                   <div class="moment-bubble">
                     <!-- 头部：作者和时间 -->
                     <div class="moment-bubble-header">
-                      <span class="moment-author" th:text="${moment.owner != null && moment.owner.displayName != null ? moment.owner.displayName : theme.config.basic.author}">作者</span>
+                      <span class="moment-author" th:text="${moment.owner != null && moment.owner.displayName != null ? moment.owner.displayName : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : site.title)}">作者</span>
                       <span class="moment-time" th:text="${moment.spec.releaseTime != null ? #temporals.format(moment.spec.releaseTime, 'yyyy-MM-dd HH:mm:ss') : ''}">时间</span>
                     </div>
                     
@@ -69,6 +79,7 @@
                       <th:block th:each="medium : ${content.medium}">
                         <img th:if="${medium.type.name() == 'PHOTO'}" 
                              th:src="${medium.url}" 
+                             th:attr="data-src=${medium.url}"
                              class="moment-img" 
                              alt="图片" 
                              loading="lazy" />
@@ -89,7 +100,7 @@
                       <span class="moment-tag" th:each="tag : ${moment.spec.tags}" th:text="'#' + ${tag}">#标签</span>
                     </div>
                     
-                    <!-- 底部操作栏 -->
+                    <!-- 底部操作-->
                     <div class="moment-footer">
                       <button class="moment-action-btn moment-comment-btn"
                               th:attr="data-moment-name=${moment.metadata.name}">
@@ -100,7 +111,7 @@
                       </button>
                     </div>
                     
-                    <!-- 评论区 -->
+                    <!-- 评论区-->
                     <div class="moment-comments" th:id="'comments-' + ${moment.metadata.name}">
                       <halo:comment group="moment.halo.run" 
                                     kind="Moment" 
@@ -113,16 +124,19 @@
             </div>
             
             <!-- 分页 -->
-            <div class="moments-pagination" th:if="${momentsResult.totalPages > 1}" data-aos="fade-up">
+            <div class="moments-pagination" th:if="${false}" data-aos="fade-up">
               <span class="pagination-info" th:text="|第 ${momentsResult.page} 页 / 共 ${momentsResult.totalPages} 页|">分页信息</span>
             </div>
             
-            <!-- 空状态 -->
-            <div class="moments-empty" th:if="${#lists.isEmpty(momentsResult.items)}" data-aos="fade-up">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              <p>暂无动态</p>
+            <!-- 空状态-->
+            <div class="plugin-notice" th:if="${#lists.isEmpty(momentsResult.items)}" data-aos="fade-up">
+              <div class="plugin-notice-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <h3 class="plugin-notice-title">暂无动态</h3>
+              <p class="plugin-notice-desc">发布瞬间后将在此展示</p>
             </div>
           </div>
         </th:block>
@@ -145,6 +159,16 @@
           commentBtn.classList.toggle('active');
         }
       });
+
+      if (!window.__momentLightbox && typeof SerenityLightbox !== 'undefined') {
+        var momentMedia = document.querySelector('.moment-media');
+        if (momentMedia) {
+          window.__momentLightbox = SerenityLightbox.create({
+            className: 'moment-lightbox',
+            delegateSelector: '.moment-media img'
+          });
+        }
+      }
     })();
   </script>
 </th:block>

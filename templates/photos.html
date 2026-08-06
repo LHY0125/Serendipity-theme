@@ -2,37 +2,48 @@
 <!--
   Theme: theme-Serenity
   Author: Serenity
-  Build: 2026-07-10 21:20:49
-  Fingerprint: 821f517d56c40c00
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
   Copyright (c) 2026 Serenity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org"
-      th:replace="~{modules/layout :: html(title = ${singlePage != null ? singlePage.spec.title : '图库集'}, content = ~{::content}, head = ~{::head})}">
+      th:replace="~{modules/layout :: html(title = ${(theme.config.watermark?.photos?.enabled == true ? theme.config.watermark.photos.title : null) ?: (singlePage != null ? singlePage.spec.title : '图库页')}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/photos.css}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" th:content="${singlePage != null ? singlePage.spec.title : '图库页'}" />
+  <meta property="og:description" th:content="${singlePage != null && singlePage.status.excerpt != null ? singlePage.status.excerpt : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle)}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" th:content="${singlePage != null ? singlePage.spec.title : '图库页'}" />
 </th:block>
 <th:block th:fragment="content">
   <main class="main">
+    <!-- PJAX：页面脚本置于 content 内，随局部刷新重新执行 -->
+    <script th:src="@{/assets/js/lightbox.js}" defer></script>
+    <script th:src="@{/assets/js/photos.js}" defer></script>
     <div class="container">
       <section class="photos-page" th:with="photoGroups = ${photoFinder != null ? photoFinder.groupBy() : null}">
         
         <div class="photos-header" data-aos="fade-up">
-          <h1 class="photos-title" th:text="${singlePage != null ? singlePage.spec.title : '图库集'}">图库集</h1>
-          <p class="photos-subtitle">用镜头记录生活的美好瞬间</p>
+          <h1 class="photos-title" th:text="${(theme.config.watermark?.photos?.enabled == true ? theme.config.watermark.photos.title : null) ?: (singlePage != null ? singlePage.spec.title : '图库页')}">图库页</h1>
+          <p class="photos-subtitle" th:text="${(theme.config.watermark?.photos?.enabled == true ? theme.config.watermark.photos.subtitle : null) ?: '用镜头记录生活的美好瞬间'}">用镜头记录生活的美好瞬间</p>
         </div>
         
-        <!-- 未安装插件提示 -->
-        <div th:if="${photoFinder == null}" class="photos-empty" data-aos="fade-up">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-          <p>图库功能需要安装「图库」插件</p>
+        <!-- 未安装插件提示-->
+        <div th:if="${photoFinder == null}" class="plugin-notice" data-aos="fade-up">
+          <div class="plugin-notice-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <h3 class="plugin-notice-title">图库功能需要安装插件</h3>
+          <p class="plugin-notice-desc">请先安装并启用「图库」插件</p>
         </div>
         
-        <!-- 分组筛选标签 -->
+        <!-- 分组筛选标志-->
         <div th:if="${photoGroups != null && !photoGroups.isEmpty()}" class="photos-filter" data-aos="fade-up">
           <button class="filter-btn active" data-group="all">全部</button>
           <th:block th:each="group : ${photoGroups}">
@@ -40,7 +51,7 @@
           </th:block>
         </div>
         
-        <!-- 图片瀑布流 -->
+        <!-- 图片瀑布-->
         <th:block th:if="${photoGroups != null && !photoGroups.isEmpty()}">
           <div class="photos-masonry" id="photos-masonry">
             <th:block th:each="group : ${photoGroups}">
@@ -49,8 +60,7 @@
                   <div class="photo-wrapper">
                     <img th:src="${photo.spec.url}" 
                          th:alt="${photo.spec.displayName}" 
-                         loading="lazy"
-                         onclick="openLightbox(this)" />
+                         loading="lazy" />
                     <span class="photo-time" th:if="${photo.metadata.creationTimestamp}" th:text="${#temporals.format(photo.metadata.creationTimestamp, 'yyyy-MM-dd')}"></span>
                     <div class="photo-overlay">
                       <span class="photo-name" th:if="${photo.spec.displayName}" th:text="${photo.spec.displayName}">图片名称</span>
@@ -63,40 +73,21 @@
           </div>
         </th:block>
         
-        <!-- 无数据占位 -->
-        <th:block th:if="${photoGroups == null || photoGroups.isEmpty()}">
-          <div class="photos-masonry" id="photos-masonry">
-            <div class="photo-item" data-group="demo">
-              <div class="photo-wrapper">
-                <img src="https://picsum.photos/seed/p1/400/600" alt="示例图片" />
-                <div class="photo-overlay">
-                  <span class="photo-name">风景照片</span>
-                  <span class="photo-group">风景</span>
-                </div>
-              </div>
+        <!-- 无数据占位-->
+        <th:block th:if="${photoFinder != null && (photoGroups == null || photoGroups.isEmpty())}">
+          <div class="plugin-notice" data-aos="fade-up">
+            <div class="plugin-notice-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
             </div>
-            <div class="photo-item" data-group="demo">
-              <div class="photo-wrapper">
-                <img src="https://picsum.photos/seed/p2/400/300" alt="示例图片" />
-                <div class="photo-overlay">
-                  <span class="photo-name">城市夜景</span>
-                  <span class="photo-group">城市</span>
-                </div>
-              </div>
-            </div>
+            <h3 class="plugin-notice-title">暂无照片</h3>
+            <p class="plugin-notice-desc">上传照片后将在此展示</p>
           </div>
         </th:block>
         
       </section>
     </div>
   </main>
-  
-  <!-- 灯箱 -->
-  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-    <img class="lightbox-img" id="lightbox-img" src="" alt="" />
-  </div>
-  
-  <script th:src="@{/assets/js/photos.js}"></script>
 </th:block>
 </html>

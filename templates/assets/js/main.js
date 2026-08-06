@@ -1,23 +1,177 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
-// 页面过渡效果
+let lenis = null;
+
+var _pageScrollHandlers = [];
+function addPageScrollListener(fn, opts) {
+  window.addEventListener('scroll', fn, opts);
+  _pageScrollHandlers.push({ fn: fn, opts: opts });
+}
+function clearPageScrollListeners() {
+  _pageScrollHandlers.forEach(function(h) {
+    window.removeEventListener('scroll', h.fn, h.opts);
+  });
+  _pageScrollHandlers = [];
+}
+
+// ========== PJAX 页面级事件注册表 ==========
+// 通过 bindPageEvent 绑定的事件会登记在此，PJAX 切页前由 clearPageEvents() 统一解绑，
+// 避免局部刷新时 document/window/内容层监听重复叠加。
+var _pageEventBindings = [];
+window.__bindPageEvent = function(target, type, handler, options) {
+  target.addEventListener(type, handler, options);
+  var dispose = function() {
+    try { target.removeEventListener(type, handler, options); } catch (e) {}
+  };
+  _pageEventBindings.push(dispose);
+  return dispose;
+};
+window.__clearPageEvents = function() {
+  _pageEventBindings.forEach(function(dispose) {
+    try { dispose(); } catch (e) {}
+  });
+  _pageEventBindings = [];
+};
+function clearPageEvents() {
+  if (typeof window.__clearPageEvents === 'function') window.__clearPageEvents();
+}
+
+function bindPageEvent(target, type, handler, options) {
+  if (!target || typeof target.addEventListener !== 'function' || typeof handler !== 'function') {
+    return function() {};
+  }
+  if (typeof window.__bindPageEvent === 'function') {
+    return window.__bindPageEvent(target, type, handler, options);
+  }
+  target.addEventListener(type, handler, options);
+  return function() {
+    try { target.removeEventListener(type, handler, options); } catch (e) {}
+  };
+}
+
+function initLenis() {
+  if (typeof Lenis === 'undefined') return;
+
+  // PJAX：Lenis 属持久层，已存在则不重建（避免 raf 循环叠加），仅 resize
+  if (lenis) {
+    try { lenis.resize(); } catch (e) {}
+    return;
+  }
+  
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    touchMultiplier: 2,
+    infinite: false,
+    autoResize: true,
+    prevent: (node) => {
+
+      if (node.closest && (
+        node.closest('[data-popper-placement]') ||
+        node.closest('[class*="emoji"]') ||
+        node.closest('[class*="picker"]') ||
+        node.closest('[class*="popover"]') ||
+        node.closest('[role="dialog"]') ||
+        node.closest('[role="listbox"]') ||
+        node.closest('emoji-picker')
+      )) return true;
+      return false;
+    }
+  });
+
+  window.__lenis = lenis;
+  
+  function raf(time) {
+    if (!lenis) return;
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  if (welcomeOverlay && !welcomeOverlay.classList.contains('hidden') && welcomeOverlay.style.display !== 'none') {
+    lenis.stop();
+
+    const observer = new MutationObserver(() => {
+      if (welcomeOverlay.classList.contains('hidden') || welcomeOverlay.style.display === 'none') {
+        if (lenis) lenis.start();
+        observer.disconnect();
+      }
+    });
+    observer.observe(welcomeOverlay, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
+
+  function patchLenisPrevent() {
+
+    var selectors = [
+      '[data-popper-placement]',
+      '.emoji-mart',
+      '.emoji-mart-scroll',
+      'emoji-picker',
+      '[class*="emoji"]',
+      '[class*="picker"]',
+      '[class*="popover"]',
+      '[role="dialog"]',
+      '[role="listbox"]'
+    ];
+    selectors.forEach(function(sel) {
+      document.querySelectorAll(sel).forEach(function(el) {
+        if (!el.hasAttribute('data-lenis-prevent')) {
+          el.setAttribute('data-lenis-prevent', '');
+        }
+      });
+    });
+  }
+
+  if (window.__lenisObserver) {
+    try { window.__lenisObserver.disconnect(); } catch(e) {}
+  }
+  window.__lenisObserver = new MutationObserver(patchLenisPrevent);
+  window.__lenisObserver.observe(document.body, { childList: true, subtree: true });
+
+  initListScrollPassthrough();
+}
+
+function initListScrollPassthrough() {
+  document.querySelectorAll('.article-feed, .stream-feed').forEach(function(container) {
+
+    if (container.dataset.scrollBound) return;
+    container.dataset.scrollBound = 'true';
+    
+    container.addEventListener('wheel', function(e) {
+      var scrollTop = container.scrollTop;
+      var scrollHeight = container.scrollHeight;
+      var clientHeight = container.clientHeight;
+      var maxScroll = scrollHeight - clientHeight;
+      var delta = e.deltaY;
+
+      if (maxScroll <= 0) return;
+
+      if (delta < 0 && scrollTop <= 0) return;
+
+      if (delta > 0 && scrollTop >= maxScroll - 1) return;
+
+      e.stopPropagation();
+    }, { passive: false });
+  });
+}
+
 function initPageTransition() {
   const transition = document.getElementById('page-transition');
   if (!transition) return;
-  
-  // 点击链接时显示过渡遮罩（仅对跳转到 /console 或外部登录页面）
-  document.addEventListener('click', (e) => {
+
+  bindPageEvent(document, 'click', (e) => {
     const link = e.target.closest('a[href*="/console"], a[href*="/login"]');
     if (!link) return;
     
     const href = link.getAttribute('href');
-    // 排除新标签页打开的链接
+
     if (link.target === '_blank') return;
     
     e.preventDefault();
@@ -29,11 +183,15 @@ function initPageTransition() {
   });
 }
 
-// 清理生活回想描述中的HTML标签
 function cleanLifeDescriptions() {
   document.querySelectorAll('.life-desc').forEach(el => {
-    const text = el.textContent || el.innerText;
-    const cleaned = text.trim().substring(0, 30);
+    const raw = el.textContent || el.innerText || '';
+    const decoder = document.createElement('div');
+    decoder.innerHTML = raw;
+    const text = (decoder.textContent || decoder.innerText || raw)
+      .replace(/\s+/g, ' ')
+      .trim();
+    const cleaned = text.substring(0, 30);
     el.textContent = cleaned + (text.length > 30 ? '...' : '');
   });
 }
@@ -42,25 +200,43 @@ function initThemeToggle() {
   const toggle = document.getElementById('theme-toggle');
   if (!toggle) return;
   
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', (e) => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     
     transitionTheme(() => {
       document.documentElement.setAttribute('data-theme', newTheme);
+      document.documentElement.setAttribute('data-color-scheme', newTheme);
       localStorage.setItem('color-scheme', newTheme);
-    });
+      if (typeof window.__applyThemeAccent === 'function') {
+        window.__applyThemeAccent();
+      }
+    }, e.clientX, e.clientY);
   });
 }
 
-function transitionTheme(updateCb) {
+function transitionTheme(updateCb, x, y) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     updateCb();
     return;
   }
   
   if (document.startViewTransition) {
-    document.startViewTransition(updateCb);
+
+    var root = document.documentElement;
+    root.style.setProperty('--tx', (x || 0) + 'px');
+    root.style.setProperty('--ty', (y || 0) + 'px');
+
+    var maxR = Math.hypot(
+      Math.max(x || 0, window.innerWidth - (x || 0)),
+      Math.max(y || 0, window.innerHeight - (y || 0))
+    );
+    root.style.setProperty('--tr', maxR + 'px');
+    root.classList.add('theme-vt');
+    var vt = document.startViewTransition(updateCb);
+    vt.finished.finally(function () {
+      root.classList.remove('theme-vt');
+    });
   } else {
     document.documentElement.classList.add('theme-transitioning');
     updateCb();
@@ -75,12 +251,20 @@ function toggleMenu() {
   const navRight = document.querySelector('.nav-right');
   if (navLeft) navLeft.classList.toggle('active');
   if (navRight) navRight.classList.toggle('active');
+
+  document.querySelectorAll('.nav-dropdown-menu.mobile-open').forEach(function(m) {
+    m.classList.remove('mobile-open');
+  });
 }
 
 function initHeaderScroll() {
   const header = document.querySelector('.header');
   if (!header) return;
-  
+
+  // 幂等守卫：header 在持久层，PJAX 下只需绑定一次
+  if (initHeaderScroll._bound) return;
+  initHeaderScroll._bound = true;
+
   let ticking = false;
   let lastScroll = 0;
   
@@ -89,9 +273,9 @@ function initHeaderScroll() {
     
     if (!ticking) {
       window.requestAnimationFrame(() => {
-        if (currentScroll > lastScroll && currentScroll > 100) {
+        if (currentScroll > lastScroll + 5 && currentScroll > 100) {
           header.classList.add('header-hidden');
-        } else if (currentScroll < lastScroll) {
+        } else if (currentScroll < lastScroll - 5) {
           header.classList.remove('header-hidden');
         }
         
@@ -111,24 +295,25 @@ function initHeaderScroll() {
 
 function initSmoothScroll() {
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
+    bindPageEvent(anchor, 'click', function(e) {
       const href = this.getAttribute('href');
       if (href === '#') return;
       
       const target = document.querySelector(href);
       if (target) {
         e.preventDefault();
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
+        if (lenis) {
+          lenis.scrollTo(target, { offset: 0, duration: 1.2 });
+        } else {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
     });
   });
 }
 
 function initMenuClose() {
-  document.addEventListener('click', (e) => {
+  bindPageEvent(document, 'click', (e) => {
     const navLeft = document.querySelector('.nav-left');
     const navRight = document.querySelector('.nav-right');
     const menuToggle = document.querySelector('.menu-toggle');
@@ -142,112 +327,177 @@ function initMenuClose() {
   });
 }
 
-function initMemoSlider() {
-  const slider = document.getElementById('memo-slider');
-  const track = document.querySelector('.memo-track');
-  const prevBtn = document.getElementById('memo-prev');
-  const nextBtn = document.getElementById('memo-next');
-  
-  if (!track || !prevBtn || !nextBtn || !slider) return;
-  
-  const cards = track.querySelectorAll('.memo-card');
-  if (cards.length === 0) return;
-  
-  let scrollPos = 0;
-  const scrollStep = 300;
-  
-  function updateButtons() {
-    const maxScroll = track.scrollWidth - slider.clientWidth;
-    prevBtn.disabled = scrollPos <= 0;
-    nextBtn.disabled = scrollPos >= maxScroll;
-    
-    // 如果内容没有溢出，隐藏按钮
-    if (track.scrollWidth <= slider.clientWidth) {
-      prevBtn.style.display = 'none';
-      nextBtn.style.display = 'none';
-    } else {
-      prevBtn.style.display = '';
-      nextBtn.style.display = '';
-    }
+function bindSwiperMediaRefresh(root, swiper) {
+  if (!root || !swiper) return;
+
+  function resizePage() {
+    try { swiper.update(); } catch (e) {}
+    try { if (lenis) lenis.resize(); } catch (e) {}
   }
-  
-  function slide(direction) {
-    const maxScroll = track.scrollWidth - slider.clientWidth;
-    scrollPos += direction * scrollStep;
-    scrollPos = Math.max(0, Math.min(scrollPos, maxScroll));
-    track.style.transform = `translateX(-${scrollPos}px)`;
-    updateButtons();
-  }
-  
-  prevBtn.addEventListener('click', () => slide(-1));
-  nextBtn.addEventListener('click', () => slide(1));
-  
-  // 初始化按钮状态
-  updateButtons();
-  
-  // 只有内容溢出时才自动滑动
-  let autoSlideInterval = null;
-  if (track.scrollWidth > slider.clientWidth) {
-    autoSlideInterval = setInterval(() => {
-      const maxScroll = track.scrollWidth - slider.clientWidth;
-      if (scrollPos >= maxScroll) {
-        scrollPos = 0;
-      } else {
-        scrollPos += scrollStep;
-        scrollPos = Math.min(scrollPos, maxScroll);
-      }
-      track.style.transform = `translateX(-${scrollPos}px)`;
-      updateButtons();
-    }, 5000);
-  }
-  
-  // 鼠标悬停时暂停自动滑动
-  slider.addEventListener('mouseenter', () => {
-    if (autoSlideInterval) clearInterval(autoSlideInterval);
+
+  root.querySelectorAll('img, video').forEach(function(media) {
+    var isVideo = media.tagName === 'VIDEO';
+    var isReady = isVideo ? media.readyState >= 1 : media.complete;
+    if (isReady) return;
+
+    var eventName = isVideo ? 'loadeddata' : 'load';
+
+    media.addEventListener(eventName, resizePage, { once: true });
+    media.addEventListener('error', resizePage, { once: true });
   });
-  
-  slider.addEventListener('mouseleave', () => {
-    if (track.scrollWidth > slider.clientWidth) {
-      autoSlideInterval = setInterval(() => {
-        const maxScroll = track.scrollWidth - slider.clientWidth;
-        if (scrollPos >= maxScroll) {
-          scrollPos = 0;
-        } else {
-          scrollPos += scrollStep;
-          scrollPos = Math.min(scrollPos, maxScroll);
-        }
-        track.style.transform = `translateX(-${scrollPos}px)`;
-        updateButtons();
-      }, 5000);
-    }
+
+  window.requestAnimationFrame(function() {
+    resizePage();
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initMemoSlider() {
+  var memoEl = document.querySelector('.memo-swiper');
+  if (!memoEl || typeof Swiper === 'undefined') return;
+
+  // PJAX 切页：先销毁旧实例，避免重复初始化 + autoplay/observer 泄漏
+  if (window.__memoSwiper) {
+    try { window.__memoSwiper.destroy(true, true); } catch (e) {}
+    window.__memoSwiper = null;
+  }
+
+  var memoSwiper = new Swiper('.memo-swiper', {
+    slidesPerView: 'auto',
+    spaceBetween: 12,
+    freeMode: true,
+    grabCursor: true,
+    observer: true,
+    observeParents: true,
+    watchOverflow: true,
+    updateOnWindowResize: true,
+    mousewheel: { forceToAxis: true },
+    navigation: {
+      prevEl: '.memo-swiper-prev',
+      nextEl: '.memo-swiper-next'
+    },
+    autoplay: {
+      delay: 4000,
+      disableOnInteraction: false,
+      pauseOnMouseEnter: true
+    },
+    breakpoints: {
+      768: { spaceBetween: 16 }
+    }
+  });
+
+  window.__memoSwiper = memoSwiper;
+  bindSwiperMediaRefresh(memoEl, memoSwiper);
+}
+
+function initMobileDropdowns() {
+  if (window.innerWidth > 768) return;
+
+  var navLeft = document.querySelector('.nav-left');
+  var navRight = document.querySelector('.nav-right');
+  if (navLeft) navLeft.classList.remove('active');
+  if (navRight) navRight.classList.remove('active');
+  document.querySelectorAll('.nav-dropdown-menu.mobile-open').forEach(function(m) {
+    m.classList.remove('mobile-open');
+  });
+
+  if (!initMobileDropdowns._bound) {
+    initMobileDropdowns._bound = true;
+
+    document.querySelectorAll('.nav-dropdown > .nav-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        if (window.innerWidth > 768) return;
+        var href = btn.getAttribute('href');
+        var isCurrentPage = href && window.location.pathname.indexOf(href) === 0;
+        if (!isCurrentPage) return; // 不在当前页面，正常导航，不展开
+        // 已在当前页面，阻止导航，toggle 二级菜单
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var dropdown = btn.closest('.nav-dropdown');
+        var menu = dropdown ? dropdown.querySelector('.nav-dropdown-menu') : null;
+        if (!menu) return;
+        var isOpen = menu.classList.contains('mobile-open');
+        document.querySelectorAll('.nav-dropdown-menu.mobile-open').forEach(function(m) {
+          m.classList.remove('mobile-open');
+        });
+        if (!isOpen) {
+          menu.classList.add('mobile-open');
+        }
+      });
+    });
+
+    document.addEventListener('click', function(e) {
+      if (window.innerWidth > 768) return;
+      if (!e.target.closest('.nav-dropdown')) {
+        document.querySelectorAll('.nav-dropdown-menu.mobile-open').forEach(function(m) {
+          m.classList.remove('mobile-open');
+        });
+      }
+    });
+  }
+}
+
+// ========== 初始化分组（PJAX 支持） ==========
+// initOnce：绑定持久层（header/back-to-top/lenis 等），只执行一次
+// initPage：针对 #pjax-main 内容层，首次加载与每次 PJAX 切页都执行
+function initOnce() {
+  initLenis();
   initThemeToggle();
   initHeaderScroll();
+}
+
+function initPage(isPjax) {
   initSmoothScroll();
   initMenuClose();
+  initBackToTop();
+  initPageTransition();
+  initMobileDropdowns();
   initMemoSlider();
   initHeroBackground();
-  initBackToTop();
   initTypewriter();
   initDragScroll();
   cleanLifeDescriptions();
   sortStreamFeed();
-  initPageTransition();
-  
-  // AOS 动画库初始化
+
   if (typeof AOS !== 'undefined') {
-    AOS.init({
-      duration: 800,
-      easing: 'ease-out-cubic',
-      once: true,
-      offset: 50,
-      delay: 0,
-      anchorPlacement: 'top-bottom'
-    });
+    if (window.__aosInited) {
+      // PJAX 切页：body 已有 aos-initialized，新内容的 [data-aos] 初始 opacity:0
+      // 且 base.css 的兜底动画被禁用，必须主动让新元素显示，避免整页空白。
+      var container = document.getElementById('pjax-main') || document;
+      container.querySelectorAll('[data-aos]').forEach(function (el) {
+        el.classList.add('aos-animate');
+      });
+      if (typeof AOS.refreshHard === 'function') {
+        AOS.refreshHard();
+      } else if (typeof AOS.refresh === 'function') {
+        AOS.refresh();
+      }
+    } else {
+      AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 50,
+        delay: 0,
+        anchorPlacement: 'top-bottom'
+      });
+      window.__aosInited = true;
+    }
   }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initOnce();
+  initPage(false);
+});
+
+// PJAX 切页钩子：进场时重跑内容层初始化（离场清理由 pjax.js 框架统一处理 +
+// clearPageScrollListeners / __clearPageEvents 覆盖；Swiper/Typewriter 各自在
+// 重新 init 时先销毁旧实例，已具备幂等）
+// 用全局队列模式，避免与 pjax.js 的脚本加载顺序耦合。
+window.__pjaxPageInit = window.__pjaxPageInit || [];
+window.__pjaxPageInit.push(function () {
+  initPage(true);
+  try { if (lenis) lenis.resize(); } catch (e) {}
 });
 
 function sortStreamFeed() {
@@ -270,19 +520,27 @@ function initHeroBackground() {
   const heroBackground = document.querySelector('.hero-background');
   if (!heroBackground) return;
   
-  const heroBackgroundImg = heroBackground.querySelector('.hero-background-img');
-  if (!heroBackgroundImg) return;
+  const heroBackgroundMedia = heroBackground.querySelectorAll('.hero-background-img');
+  if (!heroBackgroundMedia || heroBackgroundMedia.length === 0) return;
   
   // 立即根据当前滚动位置设置状态（防止刷新时闪烁）
+  var lastProgress = -1;
   function updateBackground() {
     const scrollY = window.pageYOffset;
     const windowHeight = window.innerHeight;
     const scrollProgress = Math.min(scrollY / windowHeight, 1);
+
+    // 进度无变化（已滚过首屏停在 1，或停在 0）时跳过，避免对全屏背景图持续重算高斯模糊
+    if (scrollProgress === lastProgress) return;
+    lastProgress = scrollProgress;
+
     const blurAmount = scrollProgress * 20;
     const opacity = 1 - scrollProgress;
-    
-    heroBackgroundImg.style.filter = `blur(${blurAmount}px)`;
-    heroBackground.style.opacity = opacity;
+
+    heroBackgroundMedia.forEach((el) => {
+      el.style.filter = `blur(${blurAmount}px)`;
+      el.style.opacity = opacity;
+    });
   }
   
   // 立即执行一次
@@ -290,7 +548,7 @@ function initHeroBackground() {
   
   let ticking = false;
   
-  window.addEventListener('scroll', () => {
+  var handler = () => {
     if (!ticking) {
       window.requestAnimationFrame(() => {
         updateBackground();
@@ -298,14 +556,15 @@ function initHeroBackground() {
       });
       ticking = true;
     }
-  }, { passive: true });
+  };
+  addPageScrollListener(handler, { passive: true });
 }
 
 function initBackToTop() {
   const btn = document.getElementById('back-to-top');
   if (!btn) return;
   
-  window.addEventListener('scroll', () => {
+  addPageScrollListener(() => {
     if (window.pageYOffset > 300) {
       btn.classList.add('visible');
     } else {
@@ -313,62 +572,100 @@ function initBackToTop() {
     }
   }, { passive: true });
   
-  btn.addEventListener('click', () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+  bindPageEvent(btn, 'click', () => {
+    if (lenis) {
+      lenis.scrollTo(0, { duration: 1.5 });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   });
 }
 
 function initTypewriter() {
   const textElement = document.querySelector('.typewriter-text');
   if (!textElement) return;
-  
+
+  // PJAX 切页：清除上一页遗留的打字机定时器链
+  if (window.__typewriterTimer) {
+    clearTimeout(window.__typewriterTimer);
+    window.__typewriterTimer = null;
+  }
+
   const text = textElement.getAttribute('data-text') || textElement.textContent;
+  const enableBackspace = textElement.getAttribute('data-backspace') === 'true';
   textElement.textContent = '';
-  
+
   let charIndex = 0;
   const typingSpeed = 150;
-  
+  const backspaceSpeed = 80;
+  const pauseAfterType = 4000;
+  const pauseAfterBackspace = 1000;
+
   function type() {
     if (charIndex < text.length) {
       textElement.textContent += text.charAt(charIndex);
       charIndex++;
-      setTimeout(type, typingSpeed);
+      window.__typewriterTimer = setTimeout(type, typingSpeed);
+    } else if (enableBackspace) {
+      window.__typewriterTimer = setTimeout(backspace, pauseAfterType);
     }
   }
-  
-  setTimeout(type, 500);
+
+  function backspace() {
+    if (charIndex > 0) {
+      charIndex--;
+      textElement.textContent = text.substring(0, charIndex);
+      window.__typewriterTimer = setTimeout(backspace, backspaceSpeed);
+    } else {
+      window.__typewriterTimer = setTimeout(type, pauseAfterBackspace);
+    }
+  }
+
+  window.__typewriterTimer = setTimeout(type, 500);
 }
 
 function initDragScroll() {
-  const slider = document.getElementById('life-slider');
-  if (!slider) return;
-  
-  let isDown = false;
-  let startX;
-  let scrollLeft;
-  
-  slider.addEventListener('mousedown', (e) => {
-    isDown = true;
-    slider.classList.add('dragging');
-    startX = e.pageX - slider.offsetLeft;
-    scrollLeft = slider.scrollLeft;
+  var lifeEl = document.querySelector('.life-swiper');
+  if (!lifeEl || typeof Swiper === 'undefined') return;
+
+  // PJAX 切页：先销毁旧实例
+  if (window.__lifeSwiper) {
+    try { window.__lifeSwiper.destroy(true, true); } catch (e) {}
+    window.__lifeSwiper = null;
+  }
+
+  var lifeSwiper = new Swiper('.life-swiper', {
+    slidesPerView: 'auto',
+    spaceBetween: 16,
+    freeMode: {
+      enabled: true,
+      momentum: true,
+      momentumRatio: 0.8
+    },
+    grabCursor: true,
+    observer: true,
+    observeParents: true,
+    watchOverflow: true,
+    updateOnWindowResize: true,
+    mousewheel: { forceToAxis: true }
   });
-  
-  document.addEventListener('mouseup', () => {
-    if (isDown) {
-      isDown = false;
-      slider.classList.remove('dragging');
-    }
-  });
-  
-  slider.addEventListener('mousemove', (e) => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - slider.offsetLeft;
-    const walk = (x - startX) * 2;
-    slider.scrollLeft = scrollLeft - walk;
-  });
+
+  window.__lifeSwiper = lifeSwiper;
+  bindSwiperMediaRefresh(lifeEl, lifeSwiper);
+}
+
+// ========== 全局工具函数 ==========
+
+/** 将 HTML 字符串转为纯文本 */
+function htmlToText(html) {
+  var temp = document.createElement('div');
+  temp.innerHTML = html;
+  return temp.textContent || temp.innerText || '';
+}
+
+/** 转义 HTML 特殊字符，防止 XSS */
+function escapeHtml(text) {
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }

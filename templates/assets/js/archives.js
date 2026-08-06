@@ -1,73 +1,85 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
-// 将置顶文章移动到列表最前面
 function sortPinnedPosts() {
   const archiveList = document.querySelector('.archive-list');
   if (!archiveList) return;
   
   const cards = Array.from(archiveList.querySelectorAll('.archive-card'));
   if (cards.length === 0) return;
-  
-  // 分离置顶和非置顶文章
+
   const pinnedCards = cards.filter(card => card.classList.contains('pinned'));
   const normalCards = cards.filter(card => !card.classList.contains('pinned'));
-  
-  // 如果没有置顶文章，不需要重排
+
   if (pinnedCards.length === 0) return;
-  
-  // 清空列表
+
   archiveList.innerHTML = '';
-  
-  // 先添加置顶文章，再添加普通文章
-  pinnedCards.forEach(card => archiveList.appendChild(card));
-  normalCards.forEach(card => archiveList.appendChild(card));
+
+  const fragment = document.createDocumentFragment();
+  pinnedCards.forEach(card => fragment.appendChild(card));
+  normalCards.forEach(card => fragment.appendChild(card));
+  archiveList.appendChild(fragment);
+}
+
+function getCommentTargetName(comment) {
+  if (!comment) return '';
+  var spec = comment.spec || {};
+  var ref = spec.subjectRef || spec.subject || spec.targetRef || spec.commentSubject || {};
+  return ref.name || spec.name || '';
 }
 
 async function loadLatestComments() {
   const container = document.getElementById('latestComments');
   if (!container) return;
-  
+
   const commentCount = parseInt(container.closest('.sidebar-widget').getAttribute('data-comment-count') || '3');
 
   try {
     const allComments = [];
-    
-    const postsResponse = await fetch(`/apis/api.content.halo.run/v1alpha1/posts?page=1&size=10&sort=metadata.creationTimestamp,desc`);
+    const postPermalinkMap = new Map();
+
+    const postsResponse = await fetch(`/apis/api.content.halo.run/v1alpha1/posts?page=1&size=20&sort=metadata.creationTimestamp,desc`);
+    let recentPosts = [];
     if (postsResponse.ok) {
       const postsData = await postsResponse.json();
-      
-      for (const post of postsData.items || []) {
-        try {
-          const params = new URLSearchParams({
-            group: 'content.halo.run',
-            kind: 'Post',
-            name: post.metadata.name,
-            page: '1',
-            size: '5',
-            version: 'v1alpha1',
-            withReplies: 'false'
-          });
-          
-          const commentsRes = await fetch(`/apis/api.halo.run/v1alpha1/comments?${params.toString()}`);
-          if (commentsRes.ok) {
-            const commentsData = await commentsRes.json();
-            if (commentsData.items && commentsData.items.length > 0) {
-              commentsData.items.forEach(comment => {
-                comment._postPermalink = post.status?.permalink || '/';
-              });
-              allComments.push(...commentsData.items);
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching comments for post:', err);
+      recentPosts = postsData.items || [];
+      recentPosts.forEach(post => {
+        if (post && post.metadata && post.metadata.name) {
+          postPermalinkMap.set(post.metadata.name, post.status && post.status.permalink ? post.status.permalink : '/');
         }
-      }
+      });
+    }
+
+    if (recentPosts.length > 0) {
+      const commentTasks = recentPosts.slice(0, 12).map(post => {
+        const params = new URLSearchParams({
+          group: 'content.halo.run',
+          kind: 'Post',
+          name: post.metadata.name,
+          page: '1',
+          size: '5',
+          version: 'v1alpha1',
+          withReplies: 'false'
+        });
+        return fetch(`/apis/api.halo.run/v1alpha1/comments?${params.toString()}`)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => ({ post: post, data: data }))
+          .catch(() => null);
+      });
+
+      const results = await Promise.all(commentTasks);
+      results.forEach(result => {
+        if (!result || !result.data || !result.data.items || result.data.items.length === 0) return;
+        result.data.items.forEach(comment => {
+          comment._postPermalink = result.post && result.post.status && result.post.status.permalink ? result.post.status.permalink : '/';
+          allComments.push(comment);
+        });
+      });
     }
 
     allComments.sort((a, b) => {
@@ -77,64 +89,40 @@ async function loadLatestComments() {
     });
 
     const latestComments = allComments.slice(0, commentCount);
-    
+
     if (latestComments.length > 0) {
-      const commentsHTML = latestComments.map(comment => {
+      const commentItems = await Promise.all(latestComments.map(async comment => {
         const author = comment.owner?.displayName || '匿名';
         const contentHTML = comment.spec?.content || '';
-        const content = htmlToText(contentHTML); 
+        const content = htmlToText(contentHTML);
         const shortContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
         const postUrl = comment._postPermalink || '/';
-        
-        let avatar = '';
-        const annotations = comment.spec?.owner?.annotations;
-        if (annotations) {
-          const website = annotations.website;
-          const emailHash = annotations['email-hash'];
-          if (website && emailHash) {
-            const baseUrl = website.endsWith('/') ? website : website + '/';
-            avatar = `${baseUrl}avatar/${emailHash}`;
-          }
-        }
-        
-        if (!avatar) {
-          avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(author)}`;
-        }
+
+        const avatar = window.SerenityCommentAvatar
+          ? await window.SerenityCommentAvatar.resolve(comment)
+          : (comment.owner?.avatar || '');
 
         return `
           <a href="${postUrl}#comment-${comment.metadata.name}" class="comment-item">
-            <img class="comment-avatar" src="${avatar}" alt="${escapeHtml(author)}" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(author)}'" />
+            <img class="comment-avatar" src="${avatar}" alt="${escapeHtml(author)}" onerror="this.style.display='none'" />
             <div class="comment-body">
               <span class="comment-author">${escapeHtml(author)}</span>
               <p class="comment-text">${escapeHtml(shortContent)}</p>
             </div>
           </a>
         `;
-      }).join('');
+      }));
+      const commentsHTML = commentItems.join('');
 
       container.innerHTML = commentsHTML;
     } else {
       container.innerHTML = '<div class="comment-empty">暂无评论</div>';
     }
   } catch (error) {
-    console.error('Error loading comments:', error);
     container.innerHTML = '<div class="comment-empty">暂无评论</div>';
   }
 }
 
-function htmlToText(html) {
-  const temp = document.createElement('div');
-  temp.innerHTML = html;
-  return temp.textContent || temp.innerText || '';
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// 一言 API
 async function loadHitokoto() {
   const widget = document.getElementById('hitokoto-widget');
   const textEl = document.getElementById('hitokoto-text');
@@ -156,8 +144,33 @@ async function loadHitokoto() {
       }
     }
   } catch (error) {
-    // 保持默认文字"热爱可抵岁月漫长"
+
   }
+}
+
+function truncateArchiveMeta() {
+  var isMobile = window.innerWidth <= 768;
+  document.querySelectorAll('.archive-card-meta').forEach(function (meta) {
+
+    var oldEllipsis = meta.querySelector('.archive-meta-ellipsis');
+    if (oldEllipsis) oldEllipsis.remove();
+    meta.querySelectorAll('.archive-category, .archive-tag').forEach(function (el) {
+      el.style.display = '';
+    });
+    if (!isMobile) return;
+
+    var items = Array.from(meta.querySelectorAll('.archive-category, .archive-tag'));
+    if (items.length <= 3) return;
+    for (var i = 3; i < items.length; i++) {
+      items[i].style.display = 'none';
+    }
+
+    var lastVisible = items[2];
+    var dot = document.createElement('span');
+    dot.className = 'archive-meta-ellipsis';
+    dot.textContent = '...';
+    lastVisible.parentNode.insertBefore(dot, lastVisible.nextSibling);
+  });
 }
 
 if (document.readyState === 'loading') {
@@ -165,9 +178,11 @@ if (document.readyState === 'loading') {
     sortPinnedPosts();
     loadLatestComments();
     loadHitokoto();
+    truncateArchiveMeta();
   });
 } else {
   sortPinnedPosts();
   loadLatestComments();
   loadHitokoto();
+  truncateArchiveMeta();
 }

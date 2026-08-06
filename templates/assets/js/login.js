@@ -1,157 +1,208 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-  let currentTheme = document.documentElement.getAttribute('data-theme');
-  if (currentTheme === 'auto' || !currentTheme) {
-    currentTheme = 'dark';
-    document.documentElement.setAttribute('data-theme', 'dark');
+/**
+ * 登录页面脚本 - 拾光风格
+ * 支持登录 ↔ 忘记密码视图切换
+ */
+
+var brandTexts = {
+  login: {
+    headline: '静候，\n文字里的重逢。',
+    desc: '欢迎回到这片宁静的文字角落。在这里，每一行字都是时光的注脚。'
+  },
+  forgot: {
+    headline: '别急，\n我们帮你找回。',
+    desc: '每一段旅程都值得继续。输入你的邮箱，我们会帮你重新启程。'
   }
-  
-  const alertElement = document.querySelector('.alert');
-  if (alertElement) {
-    const message = alertElement.textContent.trim();
-    const isError = alertElement.classList.contains('alert-error');
-    const isSuccess = alertElement.classList.contains('alert-success');
-    
-    showToast(message, isError ? 'error' : (isSuccess ? 'success' : 'info'));
-    alertElement.remove();
-  }
-  
-  setTimeout(function() {
-    const forgotPasswordLink = document.querySelector('.form-item-extra-link') || 
-                              document.querySelector('a[href*="password-reset"]') ||
-                              document.querySelector('a[href*="forgot"]');
-    
-    if (forgotPasswordLink) {
-      forgotPasswordLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePasswordResetForm();
+};
+
+var currentView = 'login';
+
+function setInputFilledState(input) {
+  if (!input) return;
+  var wrap = input.closest('.form-input');
+  if (!wrap) return;
+  var filled = (input.value || '').length > 0;
+  wrap.classList.toggle('has-value', filled);
+}
+
+function bindPersistentInputState(root) {
+  var scope = root || document;
+  var inputs = scope.querySelectorAll('.halo-form .form-input input:not([type="hidden"])');
+  inputs.forEach(function(input) {
+    if (input.dataset.filledStateBound !== '1') {
+      input.dataset.filledStateBound = '1';
+      ['input', 'change', 'blur', 'keyup'].forEach(function(evt) {
+        input.addEventListener(evt, function() {
+          setInputFilledState(input);
+        });
       });
     }
-  }, 500);
+    setInputFilledState(input);
+  });
+}
+
+function switchView(viewName) {
+  if (viewName === currentView) return;
+
+  var panels = document.querySelectorAll('.gateway-view-panel');
+  panels.forEach(function(panel) {
+    panel.classList.remove('active');
+  });
+
+  setTimeout(function() {
+    var target = document.getElementById('view-' + viewName);
+    if (target) {
+      target.classList.add('active');
+    }
+  }, 80);
+
+  updateBrandText(viewName);
+  currentView = viewName;
+}
+
+function updateBrandText(viewName) {
+  var headline = document.getElementById('brand-headline');
+  var desc = document.getElementById('brand-desc');
+  if (!headline || !desc) return;
+
+  var texts = brandTexts[viewName] || brandTexts.login;
+
+  headline.style.opacity = '0';
+  headline.style.transform = 'translateX(1.875rem)';
+  desc.style.opacity = '0';
+  desc.style.transform = 'translateX(1.875rem)';
+
+  setTimeout(function() {
+    headline.textContent = texts.headline;
+    desc.textContent = texts.desc;
+
+    headline.style.transition = 'opacity 0.7s cubic-bezier(0.23,1,0.32,1), transform 0.7s cubic-bezier(0.23,1,0.32,1)';
+    desc.style.transition = 'opacity 0.7s cubic-bezier(0.23,1,0.32,1), transform 0.7s cubic-bezier(0.23,1,0.32,1)';
+    headline.style.opacity = '1';
+    headline.style.transform = 'translateX(0)';
+    setTimeout(function() {
+      desc.style.opacity = '1';
+      desc.style.transform = 'translateX(0)';
+    }, 100);
+  }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  bindPersistentInputState(document);
+  setTimeout(function() {
+    bindPersistentInputState(document);
+  }, 250);
+
+  // 处理服务端返回的错误/成功信息 → 转为气泡提示
+  var alerts = document.querySelectorAll('.alert');
+  alerts.forEach(function(alert) {
+    var message = alert.textContent.trim();
+    if (!message) return;
+    var isError = alert.classList.contains('alert-error');
+    var isSuccess = alert.classList.contains('alert-success');
+    if (typeof showToast === 'function') {
+      showToast(message, isError ? 'error' : (isSuccess ? 'success' : 'info'));
+    }
+    alert.remove();
+  });
+
+  // 表单提交加载状态
+  setTimeout(function() {
+    var loginForm = document.querySelector('#login-form') || document.querySelector('form[action*="login"]');
+    if (loginForm) {
+      loginForm.addEventListener('submit', function() {
+        var submitBtn = loginForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '登录中...';
+        }
+      });
+    }
+
+    // 忘记密码链接 → 切换到忘记密码视图
+    var forgotLink = document.querySelector('.form-item-extra-link') ||
+                     document.querySelector('a[href*="password-reset"]') ||
+                     document.querySelector('a[href*="forgot"]');
+    if (forgotLink) {
+      forgotLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var csrfInput = document.querySelector('#login-form input[name="_csrf"]') ||
+                        document.querySelector('input[name="_csrf"]');
+        var resetCsrf = document.getElementById('reset-csrf');
+        if (csrfInput && resetCsrf) {
+          resetCsrf.value = csrfInput.value;
+        }
+        switchView('forgot');
+      });
+    }
+
+    // 找回密码表单 AJAX 提交
+    var resetForm = document.getElementById('reset-form');
+    if (resetForm) {
+      resetForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var emailInput = document.getElementById('reset-email');
+        var csrfToken = document.getElementById('reset-csrf');
+        var submitBtn = resetForm.querySelector('button[type="submit"]');
+        if (!emailInput || !emailInput.value.trim()) {
+          if (typeof showToast === 'function') showToast('请输入邮箱地址', 'error');
+          return;
+        }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '发送中...';
+        }
+        var formData = new URLSearchParams();
+        formData.append('email', emailInput.value.trim());
+        if (csrfToken && csrfToken.value) {
+          formData.append('_csrf', csrfToken.value);
+        }
+        fetch('/password-reset/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+          redirect: 'manual'
+        }).then(function(resp) {
+          if (resp.status === 429) {
+            if (typeof showToast === 'function') showToast('操作过于频繁，请稍后再试', 'error');
+          } else if (resp.ok || resp.status === 200 || resp.type === 'opaqueredirect') {
+            if (typeof showToast === 'function') showToast('如果该邮箱已注册，您将收到重置链接', 'success');
+            emailInput.value = '';
+            setInputFilledState(emailInput);
+          } else {
+            if (typeof showToast === 'function') showToast('发送失败，请稍后重试', 'error');
+          }
+        }).catch(function() {
+          if (typeof showToast === 'function') showToast('网络错误，请检查连接', 'error');
+        }).finally(function() {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '发送重置邮件';
+          }
+        });
+      });
+    }
+
+    // 记住我 ↔ 社交登录表单同步
+    var rememberMe = document.getElementById('remember-me');
+    if (rememberMe) {
+      rememberMe.addEventListener('change', function() {
+        var checked = rememberMe.checked;
+        document.querySelectorAll('.social-btn-form').forEach(function(form) {
+          var action = form.getAttribute('action');
+          if (action) {
+            form.setAttribute('action', action.replace(/remember-me=(true|false)/, 'remember-me=' + checked));
+          }
+        });
+      });
+    }
+  }, 100);
 });
-
-function showToast(message, type = 'info') {
-  const existingToast = document.querySelector('.sepo-toast');
-  if (existingToast) {
-    existingToast.remove();
-  }
-  
-  const icons = {
-    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-  };
-
-  const toast = document.createElement('div');
-  toast.className = 'sepo-toast ' + type;
-  toast.innerHTML = `
-    <div class="sepo-toast-icon">${icons[type] || icons.info}</div>
-    <div class="sepo-toast-message">${message}</div>
-  `;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 10);
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-  }, 3000);
-}
-
-function togglePasswordResetForm() {
-  const formWrapper = document.querySelector('.halo-form-wrapper');
-  const loginForm = document.querySelector('#login-form') || document.querySelector('.halo-form');
-  
-  if (!loginForm) return;
-  
-  if (formWrapper && formWrapper.classList.contains('reset-mode')) {
-    showLoginForm();
-  } else {
-    showResetForm();
-  }
-}
-
-function showResetForm() {
-  const formWrapper = document.querySelector('.halo-form-wrapper');
-  const loginForm = document.querySelector('#login-form') || document.querySelector('.halo-form');
-  
-  if (formWrapper) {
-    formWrapper.classList.add('reset-mode');
-  }
-  
-  loginForm.style.display = 'none';
-  
-  const csrfToken = document.querySelector('input[name="_csrf"]');
-  const csrfTokenValue = csrfToken ? csrfToken.value : '';
-  
-  const resetFormHTML = `
-    <form class="halo-form" id="reset-form" action="/password-reset/email" method="post">
-      <input type="hidden" name="_csrf" value="${csrfTokenValue}" />
-      <div class="form-item">
-        <label for="reset-email">邮箱地址</label>
-        <div class="form-input">
-          <input type="email" id="reset-email" name="email" required autocomplete="email" autofocus />
-        </div>
-      </div>
-      <div class="form-item">
-        <button type="submit">发送重置链接</button>
-      </div>
-      <div class="form-item" style="margin-top: 16px; text-align: center;">
-        <a href="#" class="form-item-extra-link" onclick="showLoginForm(); return false;">返回登录</a>
-      </div>
-    </form>
-  `;
-  
-  loginForm.insertAdjacentHTML('afterend', resetFormHTML);
-}
-
-function showLoginForm() {
-  const formWrapper = document.querySelector('.halo-form-wrapper');
-  const loginForm = document.querySelector('#login-form') || document.querySelector('.halo-form');
-  const resetForm = document.querySelector('#reset-form');
-  
-  if (formWrapper) {
-    formWrapper.classList.remove('reset-mode');
-  }
-  
-  if (loginForm) {
-    loginForm.style.display = 'block';
-  }
-  
-  if (resetForm) {
-    resetForm.remove();
-  }
-}
-
-// 一言功能
-function fetchHitokoto() {
-  const container = document.getElementById('hitokoto-container');
-  const textEl = document.getElementById('hitokoto-text');
-  const authorEl = document.getElementById('hitokoto-author');
-  
-  if (!container || !textEl || !authorEl) return;
-  
-  fetch('https://v1.hitokoto.cn/')
-    .then(response => response.json())
-    .then(data => {
-      textEl.textContent = data.hitokoto;
-      const from = data.from_who || data.from || '佚名';
-      authorEl.textContent = '—— ' + from;
-      container.style.display = 'block';
-    })
-    .catch(() => {});
-}
-
-document.addEventListener('DOMContentLoaded', fetchHitokoto);

@@ -1,8 +1,8 @@
 /*
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
@@ -17,70 +17,7 @@
   margin-bottom: var(--space-6);
 }
 
-.friends-circle-title {
-  font-size: 2rem;
-  font-weight: 800;
-  font-style: italic;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--color-accent);
-  margin-bottom: var(--space-2);
-  position: relative;
-  display: inline-block;
-  transition: color var(--duration-normal), -webkit-text-fill-color var(--duration-normal);
-  cursor: default;
-}
-
-.friends-circle-header:hover .friends-circle-title {
-  color: var(--color-accent);
-  -webkit-text-fill-color: var(--color-accent);
-}
-
-.friends-circle-title::before,
-.friends-circle-title::after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  height: 3px;
-  border-radius: var(--radius-full);
-}
-
-.friends-circle-title::before {
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    var(--color-accent) 20%, 
-    var(--color-accent-secondary) 50%, 
-    var(--color-accent) 80%, 
-    transparent);
-  animation: wave-flow 3s ease-in-out infinite;
-}
-
-.friends-circle-title::after {
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  background: var(--color-accent);
-  opacity: 0.4;
-  animation: wave-pulse 2s ease-in-out infinite 0.5s;
-}
-
-@keyframes wave-flow {
-  0%, 100% { width: 60px; opacity: 0.8; }
-  50% { width: 100px; opacity: 1; }
-}
-
-@keyframes wave-pulse {
-  0%, 100% { width: 30px; opacity: 0.3; }
-  50% { width: 50px; opacity: 0.6; }
-}
-
-.friends-circle-subtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-top: var(--space-4);
-}
+/* 标题样式已提取到 base.css */
 
 .friends-circle-grid {
   display: flex;
@@ -351,36 +288,65 @@
   }
   
   .friend-post-card {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     min-height: auto;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
   }
   
   .friend-post-author {
-    width: 100%;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .friend-author-link {
+    gap: var(--space-2);
+  }
+
+  .friend-author-avatar {
+    width: 32px;
+    height: 32px;
+    border-width: 1px;
+  }
+
+  .friend-author-name {
+    font-size: 11px;
+    max-width: 60px;
+  }
+
+  .friend-post-time {
+    font-size: 9px;
   }
   
   .friend-post-content {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
   
   .friend-post-title {
-    font-size: 14px;
-  }
-  
-  .friend-post-desc {
     font-size: 12px;
   }
   
+  .friend-post-desc {
+    font-size: 10px;
+  }
+  
   .friend-post-arrow {
-    position: absolute;
-    right: var(--space-4);
-    top: 50%;
-    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    position: static;
+    transform: none;
+  }
+
+  .friend-post-arrow svg {
+    width: 14px;
+    height: 14px;
   }
   
   .friend-post-card:hover .friend-post-arrow {
-    transform: translateY(-50%) translateX(4px);
+    transform: translateX(2px);
   }
 }
 

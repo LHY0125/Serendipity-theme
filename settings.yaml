@@ -1,4 +1,4 @@
-apiVersion: v1alpha1
+﻿apiVersion: v1alpha1
 kind: Setting
 metadata:
   name: theme-Serenity-setting
@@ -7,29 +7,29 @@ spec:
     - group: basic
       label: 基本设置
       formSchema:
-        - $formkit: text
-          name: title
-          label: 站点标题
-          value: "Serenity's Blog"
-          help: 显示在浏览器标签和页脚
-        - $formkit: attachment
-          name: favicon
-          label: 浏览器图标 (Favicon)
-          help: 显示在浏览器标签上的小图标，建议使用 .ico 或 .png 格式，尺寸 32x32 或 64x64，留空则使用主题默认图标 (ics6.webp)
-        - $formkit: text
-          name: author
-          label: 作者名称
-          value: "Serenity"
-          help: 用于关于页面和文章署名
-        - $formkit: textarea
-          name: description
-          label: 站点描述
-          value: "前端开发者 / 独立开发者 / 博主"
-          help: 显示在首页和关于页面
-        - $formkit: attachment
-          name: logo
-          label: 站点Logo
-          help: 用于关于页面和友链申请，建议尺寸 200x200，留空则使用头像或主题默认图标 (ics6.webp)
+        - $formkit: group
+          name: siteInfo
+          label: 站点信息
+          value:
+            title: "Serenity's Blog"
+            author: "Serenity"
+            description: "前端开发者 / 独立开发者 / 博主"
+          children:
+            - $formkit: text
+              name: title
+              label: 站点标题
+              value: "Serenity's Blog"
+              help: 显示在浏览器标签和页脚
+            - $formkit: text
+              name: author
+              label: 作者名称
+              value: "Serenity"
+              help: 用于关于页面和文章署名
+            - $formkit: textarea
+              name: description
+              label: 站点描述
+              value: "前端开发者 / 独立开发者 / 博主"
+              help: 显示在首页和关于页面
         - $formkit: select
           name: defaultTheme
           label: 默认主题模式
@@ -42,43 +42,414 @@ spec:
             - label: 跟随系统
               value: auto
           help: 用户首次访问时的默认主题
-        - $formkit: textarea
-          name: customHead
-          label: 自定义 Head 代码
-          help: 在 <head> 标签中插入自定义代码，如统计代码、自定义样式等
-        - $formkit: textarea
-          name: customScript
-          label: 自定义 JavaScript
-          help: 在页面底部插入自定义 JavaScript 代码
-
+        - $formkit: color
+          name: lightColor
+          label: 亮色模式主题色
+          value: '#7DCDE8'
+          help: 亮色模式下的主题主色调
+        - $formkit: color
+          name: darkColor
+          label: 暗色模式主题色
+          value: '#E87D98'
+          help: 暗色模式下的主题主色调
+        - $formkit: group
+          name: typographyConfig
+          label: 全站文字样式
+          value:
+            enabled: false
+            globalFont: ""
+          children:
+            - $formkit: switch
+              id: typography_enabled
+              name: enabled
+              label: 启用全站文字样式
+              value: false
+              help: 启用后统一应用一个全局字体（仅字体，不修改字号和字重）
+            - $formkit: select
+              name: globalFont
+              label: 全局字体（单选）
+              value: ""
+              if: $get(typography_enabled).value
+              options:
+                - label: 主题默认
+                  value: ""
+                - label: 思源黑体（Noto Sans SC）
+                  value: "noto_sans_sc"
+                - label: 苹方（PingFang SC）
+                  value: "pingfang_sc"
+                - label: 微软雅黑（Microsoft YaHei）
+                  value: "microsoft_yahei"
+                - label: 霞鹜文楷（可爱）
+                  value: "lxgw_wenkai"
+                - label: 得意黑（Smiley Sans，可爱）
+                  value: "smiley_sans"
+                - label: 站酷快乐体（可爱）
+                  value: "zcool_kuaile"
+                - label: 幼圆（可爱）
+                  value: "youyuan"
+                - label: 华文圆体（可爱）
+                  value: "styuanti"
+                - label: 华文楷体（手写）
+                  value: "stkaiti"
+                - label: 华文行楷（手写）
+                  value: "stxingkai"
+                - label: HarmonyOS Sans SC（鸿蒙）
+                  value: "harmonyos_sans_sc"
+                - label: MiSans（小米）
+                  value: "misans"
+                - label: Inter（英文）
+                  value: "inter"
+              help: 选择后会覆盖全站文字样式（包括正文、标题、代码等）
+        - $formkit: group
+          name: watermarkConfig
+          label: 水印设置
+          value:
+            watermarkEnabled: true
+            watermarkText: "Serenity"
+            watermarkSource: "custom"
+            watermarkOpacity: 0.05
+          children:
+            - $formkit: switch
+              id: watermark_enabled
+              name: watermarkEnabled
+              label: 启用水印
+              value: true
+              help: 是否在页面各处显示装饰性水印（不影响功能）
+            - $formkit: text
+              name: watermarkText
+              label: 水印文字
+              value: "Serenity"
+              if: $get(watermark_enabled).value
+              help: 自定义水印显示的文字，默认为站点标题
+            - $formkit: select
+              name: watermarkSource
+              label: 水印来源
+              value: "custom"
+              if: $get(watermark_enabled).value
+              options:
+                - label: 自定义文字
+                  value: custom
+                - label: 使用站点标题
+                  value: siteTitle
+              help: 选择水印文字的来源
+            - $formkit: number
+              name: watermarkOpacity
+              label: 水印透明度
+              value: 0.05
+              min: 0.01
+              max: 0.2
+              step: 0.01
+              if: $get(watermark_enabled).value
+              help: 水印的透明度，范围 0.01-0.2，默认 0.05（非常淡）
+        - $formkit: group
+          name: navIcons
+          label: 导航图标配置
+          value:
+            iconHome: "fa-solid fa-house"
+            iconArchives: "fa-solid fa-box-archive"
+            iconTags: "fa-solid fa-tags"
+            iconCategories: "fa-solid fa-folder"
+            iconAbout: "fa-solid fa-user"
+            iconMoments: "fa-solid fa-book"
+            iconLinks: "fa-solid fa-link"
+            iconGuestbook: "fa-solid fa-comment"
+            iconProjects: "fa-brands fa-github"
+            iconPhotos: "fa-solid fa-images"
+            iconFriendsCircle: "fa-solid fa-camera"
+            iconWishes: "fa-solid fa-note-sticky"
+            iconStarGallery: "fa-solid fa-location-arrow"
+          children:
+            - $formkit: text
+              name: iconHome
+              label: 首页图标
+              value: "fa-solid fa-house"
+              placeholder: "fa-solid fa-house"
+              help: 首页导航图标，适用于固定首页按钮和手动创建的首页菜单
+            - $formkit: text
+              name: iconArchives
+              label: 归档图标
+              value: "fa-solid fa-box-archive"
+              placeholder: "fa-solid fa-box-archive"
+              help: 归档页面图标，图标查找：https://fontawesome.com/search?o=r&m=free
+            - $formkit: text
+              name: iconTags
+              label: 标签图标
+              value: "fa-solid fa-tags"
+              placeholder: "fa-solid fa-tags"
+              help: 标签页面图标
+            - $formkit: text
+              name: iconCategories
+              label: 分类图标
+              value: "fa-solid fa-folder"
+              placeholder: "fa-solid fa-folder"
+              help: 分类页面图标
+            - $formkit: text
+              name: iconAbout
+              label: 关于我图标
+              value: "fa-solid fa-user"
+              placeholder: "fa-solid fa-user"
+              help: 关于我页面图标
+            - $formkit: text
+              name: iconMoments
+              label: 碎碎念图标
+              value: "fa-solid fa-book"
+              placeholder: "fa-solid fa-book"
+              help: 碎碎念页面图标
+            - $formkit: text
+              name: iconLinks
+              label: 朋友们图标
+              value: "fa-solid fa-link"
+              placeholder: "fa-solid fa-link"
+              help: 朋友们页面图标
+            - $formkit: text
+              name: iconGuestbook
+              label: 留言板图标
+              value: "fa-solid fa-comment"
+              placeholder: "fa-solid fa-comment"
+              help: 留言板页面图标
+            - $formkit: text
+              name: iconProjects
+              label: 项目集图标
+              value: "fa-brands fa-github"
+              placeholder: "fa-brands fa-github"
+              help: 项目集页面图标
+            - $formkit: text
+              name: iconPhotos
+              label: 图库图标
+              value: "fa-solid fa-images"
+              placeholder: "fa-solid fa-images"
+              help: 图库页面图标
+            - $formkit: text
+              name: iconFriendsCircle
+              label: 朋友圈图标
+              value: "fa-solid fa-camera"
+              placeholder: "fa-solid fa-camera"
+              help: 朋友圈页面图标
+            - $formkit: text
+              name: iconWishes
+              label: 便签墙图标
+              value: "fa-solid fa-note-sticky"
+              placeholder: "fa-solid fa-note-sticky"
+              help: 便签墙页面图标
+            - $formkit: text
+              name: iconStarGallery
+              label: 星图库图标
+              value: "fa-solid fa-location-arrow"
+              placeholder: "fa-solid fa-location-arrow"
+              help: 星图库页面图标
+        - $formkit: group
+          name: loadingConfig
+          label: 页面过渡动画
+          value:
+            enableLoading: true
+            loadingGif: ""
+            enablePjax: false
+          children:
+            - $formkit: switch
+              id: loading_enabled
+              name: enableLoading
+              label: 启用页面过渡动画
+              value: true
+              help: 开启后，首次访问和站内跳转都会显示加载遮罩，等所有资源就绪后自动淡出
+            - $formkit: switch
+              name: enablePjax
+              label: 启用无刷新切换（PJAX）
+              value: false
+              help: 开启后站内页面切换不再整页刷新，音乐可跨页面连续播放。登录、控制台等页面仍走整页跳转。如遇异常可关闭此项回退。
+            - $formkit: attachment
+              name: loadingGif
+              label: 加载动画 GIF
+              if: $get(loading_enabled).value
+              accepts:
+                - "image/gif"
+              help: 仅支持 GIF 格式，建议尺寸 120x120 以内，透明背景效果更佳
+        - $formkit: repeater
+          name: customNavIcons
+          label: 自定义页面导航图标
+          help: 为非主题内置模板的自定义页面配置导航图标。slug 填写页面 URL 中的路径，如 https://example.com/test 中的 test。配置后导航栏和风向标均会显示对应图标
+          children:
+            - $formkit: text
+              name: slug
+              label: 页面路径（Slug）
+              validation: required
+              placeholder: "例如：test"
+              help: 页面 URL 中的路径部分，如 /test 中的 test
+            - $formkit: text
+              name: icon
+              label: 图标代码
+              validation: required
+              placeholder: "fa-solid fa-star"
+              help: Font Awesome 图标类名，图标查找：https://fontawesome.com/search?o=r&m=free
+            - $formkit: checkbox
+              name: showInCompass
+              label: 在风向标中显示
+              value: true
+              help: 是否在首页风向标区域显示此页面
+        - $formkit: repeater
+          name: categoryIcons
+          label: 分类图标列表
+          help: 为每个分类配置自定义图标和颜色，slug 填写分类 URL 中的路径，如 /categories/kai-fa 中的 kai-fa
+          children:
+            - $formkit: text
+              name: slug
+              label: 分类 Slug
+              validation: required
+              placeholder: "例如：kai-fa"
+              help: 分类 URL 中的路径，如 /categories/kai-fa 中的 kai-fa
+            - $formkit: text
+              name: icon
+              label: 图标类名
+              placeholder: "fa-solid fa-folder"
+              help: Font Awesome 图标，如 fa-solid fa-code
+            - $formkit: text
+              name: color
+              label: 图标颜色
+              placeholder: "#FF6B6B"
+              help: 颜色如 #FF6B6B
+        - $formkit: group
+          name: loginSettings
+          label: 登录设置
+          value:
+            hideLoginButton: false
+            enableGatewayWallpaper: false
+          children:
+            - $formkit: checkbox
+              name: hideLoginButton
+              label: 隐藏前台登录按钮
+              value: false
+              help: 开启后将隐藏导航栏右侧的登录按钮
+            - $formkit: switch
+              name: enableGatewayWallpaper
+              label: 启用登录页壁纸
+              value: false
+              help: 控制登录、注册、忘记密码等页面是否显示壁纸背景。开启后复用首页壁纸配置，默认关闭
     - group: hero
       label: 首页头部
       formSchema:
-        - $formkit: attachment
-          name: avatar
-          label: 头像
-          help: 建议使用正方形图片，尺寸 400x400 以上，留空则使用主题默认头像 (ics6.webp)
-        - $formkit: text
-          name: name
-          label: 显示名称
-          value: "Serenity"
-          help: 显示在首页头像下方
-        - $formkit: checkbox
-          name: enableTypewriter
-          label: 启用打字机效果
-          value: true
-          help: 为首页大标题添加打字机动画效果
-        - $formkit: text
-          name: tagline
-          label: 个性标语
-          value: "热爱可抵岁月漫长"
-          help: 显示在名称下方的一句话介绍
-        - $formkit: textarea
-          name: bio
-          label: 个人简介
-          value: "一个热爱技术、喜欢折腾的开发者。\n专注于前端开发，偶尔写写后端。\n记录生活，分享技术，探索未知。"
-          help: 显示在首页的详细介绍，支持多行
+        - $formkit: group
+          name: profileInfo
+          label: 个人信息
+          value:
+            name: "Serenity"
+            enableTypewriter: true
+            enableTypewriterBackspace: false
+            tagline: "热爱可抵岁月漫长"
+            bio: "一个热爱技术、喜欢折腾的开发者。\n专注于前端开发，偶尔写写后端。\n记录生活，分享技术，探索未知。"
+          children:
+            - $formkit: text
+              name: name
+              label: 显示名称
+              value: "Serenity"
+              help: 显示在首页头像下方
+            - $formkit: checkbox
+              name: enableTypewriter
+              label: 启用打字机效果
+              value: true
+              help: 为首页大标题添加打字机动画效果
+            - $formkit: checkbox
+              name: enableTypewriterBackspace
+              label: 启用打字机回退效果
+              value: false
+              help: 打字完成后逐字回退再重新打字，形成循环动画。关闭则打完即停
+            - $formkit: text
+              name: tagline
+              label: 个性标语
+              value: "热爱可抵岁月漫长"
+              help: 显示在名称下方的一句话介绍
+            - $formkit: textarea
+              name: bio
+              label: 个人简介
+              value: "一个热爱技术、喜欢折腾的开发者。\n专注于前端开发，偶尔写写后端。\n记录生活，分享技术，探索未知。"
+              help: 显示在首页的详细介绍，支持多行
+        - $formkit: group
+          name: colorConfig
+          label: 颜色自定义
+          value:
+            nameColor: ""
+            taglineColor: ""
+            bioColor: ""
+            avatarGlowColor: ""
+            weatherColor: ""
+          children:
+            - $formkit: text
+              name: nameColor
+              label: 显示名称颜色
+              value: ""
+              placeholder: "FF6B6B 鎴?linear-gradient(135deg, FF6B6B, FB966E)"
+              help: "自定义显示名称的颜色，支持纯色（如 #FF6B6B）或渐变（如 linear-gradient(135deg, #F596AA, #FB966E)）。留空则使用主题默认颜色。"
+            - $formkit: text
+              name: taglineColor
+              label: 个性标语颜色
+              value: ""
+              placeholder: "333 鎴?linear-gradient(135deg, 667eea, 764ba2)"
+              help: "自定义个性标语的颜色，支持纯色或渐变。留空则使用主题默认颜色。"
+            - $formkit: text
+              name: bioColor
+              label: 个人简介颜色
+              value: ""
+              placeholder: "666 鎴?linear-gradient(135deg, f093fb, f5576c)"
+              help: "自定义个人简介的颜色，支持纯色或渐变。留空则使用主题默认颜色。"
+            - $formkit: text
+              name: avatarGlowColor
+              label: 头像光晕颜色
+              value: ""
+              placeholder: "#FF6B6B"
+              help: "自定义头像浮动光晕的颜色，只支持纯色（如 #FF6B6B）。留空则使用主题强调色。"
+            - $formkit: text
+              name: weatherColor
+              label: 天气文字颜色
+              value: ""
+              placeholder: "#FF6B6B 鎴?linear-gradient(135deg, #FF6B6B, #FB966E)"
+              help: "自定义天气文字颜色。留空或纯色为镂空描边效果，渐变为渐变填充效果。"
 
+    - group: welcome
+      label: 欢迎页设置
+      formSchema:
+        - $formkit: group
+          name: welcomeConfig
+          label: 欢迎页设置
+          value:
+            enabled: true
+            showMascot: true
+            mascotDark: ""
+            mascotLight: ""
+            mascotCredit: "https://x.com/Seseren_kr"
+            sayings: "点击任意处进入哦~\n欢迎来到我的小站~\n今天也要元气满满！\n很高兴见到你~"
+          children:
+            - $formkit: switch
+              id: welcome_enabled
+              name: enabled
+              label: 启用欢迎页
+              value: true
+              help: 首次访问时显示全屏欢迎页，点击任意处进入主页
+            - $formkit: checkbox
+              name: showMascot
+              label: 显示吉祥物
+              value: true
+              if: $get(welcome_enabled).value
+              help: 在欢迎页右下角显示吉祥物动画
+            - $formkit: attachment
+              name: mascotDark
+              label: 暗色模式吉祥物
+              if: $get(welcome_enabled).value
+              help: 上传暗色模式下显示的吉祥物 GIF/图片，留空则使用默认 Babara
+            - $formkit: attachment
+              name: mascotLight
+              label: 亮色模式吉祥物
+              if: $get(welcome_enabled).value
+              help: 上传亮色模式下显示的吉祥物 GIF/图片，留空则使用默认 Kirara
+            - $formkit: text
+              name: mascotCredit
+              label: 吉祥物来源链接
+              value: "https://x.com/Seseren_kr"
+              if: $get(welcome_enabled).value
+              help: 吉祥物素材的来源链接，显示为 Twitter/X 图标，留空则不显示
+            - $formkit: textarea
+              name: sayings
+              label: 吉祥物语录
+              value: "点击任意处进入哦~\n欢迎来到我的小站~\n今天也要元气满满！\n很高兴见到你~"
+              if: $get(welcome_enabled).value
+              help: 吉祥物气泡随机显示的话语，每行一条
     - group: social
       label: 社交链接
       formSchema:
@@ -109,7 +480,7 @@ spec:
               help: 完整的链接地址，Email 请填写邮箱地址
             - $formkit: select
               name: icon
-              label: 图标
+              label: 内置图标
               value: "github"
               options:
                 - label: GitHub
@@ -128,139 +499,289 @@ spec:
                   value: telegram
                 - label: Discord
                   value: discord
-              help: 选择对应的图标
-        - $formkit: checkbox
-          name: enableSponsor
-          label: 启用赞助功能
-          value: false
-          help: 在首页社交图标最右边显示赞助图标
-        - $formkit: attachment
-          name: sponsorQrCode
-          label: 赞助二维码
-          help: 上传赞助二维码图片，鼠标悬停时显示
-        - $formkit: text
-          name: sponsorTitle
-          label: 赞助标题
-          value: "赞赏支持"
-          help: 赞助悬浮层的标题
-        - $formkit: text
-          name: sponsorText
-          label: 赞助说明
-          value: "感谢你的支持 ❤️"
-          help: 赞助悬浮层的说明文字
+              help: 快速选择常见社交图标（当 Iconify 图标为空时使用）
+            - $formkit: text
+              name: iconifyIcon
+              label: Iconify 图标
+              placeholder: "mdi:github"
+              help: "从 Iconify 图标库输入图标名称（如 mdi:github、ri:twitter-x-fill），可在 https://icon-sets.iconify.design 查找。优先级高于内置图标，留空则使用上方内置图标"
+        - $formkit: group
+          name: rssConfig
+          label: RSS 订阅
+          value:
+            showRss: true
+          children:
+            - $formkit: checkbox
+              name: showRss
+              label: 显示 RSS 订阅
+              value: true
+              help: 在首页社交图标区域显示 RSS 订阅图标
+        - $formkit: group
+          name: sponsorConfig
+          label: 赞助设置
+          value:
+            enableSponsor: false
+            sponsorQrCode: ""
+            sponsorTitle: "赞赏支持"
+            sponsorText: "感谢你的支持"
+          children:
+            - $formkit: switch
+              id: social_enable_sponsor
+              name: enableSponsor
+              label: 启用赞助功能
+              value: false
+              help: 在首页社交图标最右侧显示赞助图标
+            - $formkit: attachment
+              name: sponsorQrCode
+              label: 赞助二维码
+              if: $get(social_enable_sponsor).value
+              help: 上传赞助二维码图片，鼠标悬停时显示
+            - $formkit: text
+              name: sponsorTitle
+              label: 赞助标题
+              value: "赞赏支持"
+              if: $get(social_enable_sponsor).value
+              help: 赞助悬浮层的标题
+            - $formkit: text
+              name: sponsorText
+              label: 赞助说明
+              value: "感谢你的支持"
+              if: $get(social_enable_sponsor).value
+              help: 赞助悬浮层的说明文字
 
     - group: compass
       label: 风向标设置
       formSchema:
-        - $formkit: checkbox
-          name: enabled
-          label: 启用风向标
-          value: true
-          help: 是否在首页显示风向标导航区域
-        - $formkit: text
-          name: title
-          label: 标题
-          value: "风向标"
-        - $formkit: text
-          name: subtitle
-          label: 副标题
-          value: "快速导航到你想去的地方"
-        - $formkit: checkbox
-          name: showArchives
-          label: 显示归档链接
-          value: true
-        - $formkit: checkbox
-          name: showTags
-          label: 显示标签链接
-          value: true
-        - $formkit: checkbox
-          name: showCategories
-          label: 显示分类链接
-          value: true
-        - $formkit: checkbox
-          name: showAbout
-          label: 显示关于我链接
-          value: true
-        - $formkit: checkbox
-          name: showMoments
-          label: 显示碎碎念链接
-          value: true
-        - $formkit: checkbox
-          name: showLinks
-          label: 显示朋友们链接
-          value: true
-        - $formkit: checkbox
-          name: showGuestbook
-          label: 显示留言板链接
-          value: true
-        - $formkit: checkbox
-          name: showProjects
-          label: 显示项目集链接
-          value: true
-        - $formkit: checkbox
-          name: showPhotos
-          label: 显示图库链接
-          value: true
-        - $formkit: checkbox
-          name: showFriendsCircle
-          label: 显示朋友圈链接
-          value: true
+        - $formkit: group
+          name: compassConfig
+          label: 风向标设置
+          value:
+            enabled: true
+            title: "风向标"
+            subtitle: "快速导航到你想去的地方"
+            showArchives: true
+            showTags: true
+            showCategories: true
+            showAbout: true
+            showMoments: true
+            showLinks: true
+            showGuestbook: true
+            showProjects: true
+            showPhotos: true
+            showFriendsCircle: true
+            showWishes: true
+            showStarGallery: true
+          children:
+            - $formkit: switch
+              id: compass_enabled
+              name: enabled
+              label: 启用风向标
+              value: true
+              help: 是否在首页显示风向标导航区域
+            - $formkit: text
+              name: title
+              label: 标题
+              value: "风向标"
+              if: $get(compass_enabled).value
+            - $formkit: text
+              name: subtitle
+              label: 副标题
+              value: "快速导航到你想去的地方"
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showArchives
+              label: 显示归档链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showTags
+              label: 显示标签链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showCategories
+              label: 显示分类链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showAbout
+              label: 显示关于我链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showMoments
+              label: 显示碎碎念链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showLinks
+              label: 显示朋友们链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showGuestbook
+              label: 显示留言板链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showProjects
+              label: 显示项目集链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showPhotos
+              label: 显示图库链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showFriendsCircle
+              label: 显示朋友圈链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showWishes
+              label: 显示便签墙链接
+              value: true
+              if: $get(compass_enabled).value
+            - $formkit: switch
+              name: showStarGallery
+              label: 显示星图库链接
+              value: true
+              if: $get(compass_enabled).value
 
     - group: home
       label: 首页内容
       formSchema:
-        - $formkit: checkbox
-          name: showHeroBackground
-          label: 显示首页背景壁纸
-          value: true
-          help: 在首页第一屏显示背景壁纸，滚动时逐渐模糊消失
-        - $formkit: attachment
-          name: heroBackground
-          label: 背景壁纸图片/视频
-          help: 上传首页背景壁纸（支持图片或 MP4/WebM 视频），留空则使用默认图片
-        - $formkit: checkbox
-          name: showThemeDecor
-          label: 显示主题装饰图片
-          value: false
-          help: 在首页头部显示主题切换的装饰图片
-        - $formkit: attachment
-          name: customDecorLight
-          label: 自定义亮色装饰图片
-          help: 上传自定义的亮色模式装饰图片，留空则使用默认图片
-        - $formkit: attachment
-          name: customDecorDark
-          label: 自定义暗色装饰图片
-          help: 上传自定义的暗色模式装饰图片，留空则使用默认图片
-        - $formkit: checkbox
-          name: showWeatherClock
-          label: 显示天气时钟
-          value: false
-          help: 在首页头像下方显示时间、城市、天气、温度信息
-        - $formkit: text
-          name: seniverseKey
-          label: 心知天气 API Key
-          placeholder: 请输入心知天气 API Key
-          help: 前往 https://www.seniverse.com 注册获取，免费版即可，自动根据访客 IP 定位
-        - $formkit: checkbox
-          name: showRecentPosts
-          label: 显示近期笔记
-          value: false
-          help: 在首页显示最新文章列表
-        - $formkit: checkbox
-          name: showActivity
-          label: 显示站点动态
-          value: false
-          help: 在首页显示最新文章、碎碎念等动态流
-        - $formkit: checkbox
-          name: showMemoCards
-          label: 显示随想碎片
-          value: false
-          help: 在首页显示随想碎片卡片轮播
-        - $formkit: checkbox
-          name: showLifeMoments
-          label: 显示生活回想
-          value: false
-          help: 在首页显示生活回想（碎碎念图片展示）
+        - $formkit: group
+          name: backgroundConfig
+          label: 背景壁纸设置
+          value:
+            showHeroBackground: true
+            heroBackground: ""
+            heroBackgroundLight: ""
+            heroBackgroundDark: ""
+            heroBackgroundApi: ""
+            heroBackgroundApiMobile: ""
+          children:
+            - $formkit: switch
+              id: home_bg_enabled
+              name: showHeroBackground
+              label: 显示首页背景壁纸
+              value: true
+              help: 在首页第一屏显示背景壁纸，滚动时逐渐模糊消失。提示：为避免影响观感，建议背景壁纸和装饰图片只启用其一
+            - $formkit: attachment
+              name: heroBackgroundLight
+              label: 亮色模式背景壁纸图片/视频
+              help: 上传亮色模式壁纸（支持图片或 MP4/WebM 视频），留空则默认使用 lightbg.webp
+              if: $get(home_bg_enabled).value
+            - $formkit: attachment
+              name: heroBackgroundDark
+              label: 暗色模式背景壁纸图片/视频
+              help: 上传暗色模式壁纸（支持图片或 MP4/WebM 视频），留空则默认使用 darkbg.webp
+              if: $get(home_bg_enabled).value
+            - $formkit: text
+              name: heroBackgroundApi
+              label: 桌面端背景 API
+              value: ""
+              help: 背景 API 地址，每行一个图片 URL，支持 API 返回多行 URL。设置后优先使用 API（覆盖亮/暗附件与默认图）
+              if: $get(home_bg_enabled).value
+            - $formkit: text
+              name: heroBackgroundApiMobile
+              label: 移动端背景 API
+              value: ""
+              help: 移动端专用 API，留空则使用桌面端 API
+              if: $get(home_bg_enabled).value
+        - $formkit: group
+          name: decorConfig
+          label: 主题装饰图片设置
+          value:
+            showThemeDecor: false
+            customDecorLight: ""
+            customDecorDark: ""
+          children:
+            - $formkit: switch
+              id: home_decor_enabled
+              name: showThemeDecor
+              label: 显示主题装饰图片
+              value: false
+              help: 在首页头部显示主题切换的装饰图片。提示：为避免影响观感，建议背景壁纸和装饰图片只启用其一
+            - $formkit: attachment
+              name: customDecorLight
+              label: 自定义亮色装饰图片
+              help: 上传自定义的亮色模式装饰图片，留空则使用默认图片
+              if: $get(home_decor_enabled).value
+            - $formkit: attachment
+              name: customDecorDark
+              label: 自定义暗色装饰图片
+              help: 上传自定义的暗色模式装饰图片，留空则使用默认图片
+              if: $get(home_decor_enabled).value
+        - $formkit: group
+          name: weatherConfig
+          label: 天气时钟设置
+          value:
+            showWeatherClock: false
+            seniverseKey: ""
+          children:
+            - $formkit: switch
+              id: home_weather_enabled
+              name: showWeatherClock
+              label: 显示天气时钟
+              value: false
+              help: 在首页头像下方显示时间、城市、天气、温度信息
+            - $formkit: text
+              name: seniverseKey
+              label: 心知天气 API Key
+              placeholder: 请输入心知天气 API Key
+              help: 前往 https://www.seniverse.com 注册获取，免费版即可，自动根据访客 IP 定位
+              if: $get(home_weather_enabled).value
+        - $formkit: group
+          name: recentPostsConfig
+          label: 近期笔记
+          value:
+            showRecentPosts: false
+          children:
+            - $formkit: switch
+              id: home_recent_posts_enabled
+              name: showRecentPosts
+              label: 显示近期笔记
+              value: false
+              help: 在首页显示最新文章列表
+        - $formkit: group
+          name: activityConfig
+          label: 站点动态
+          value:
+            showActivity: false
+          children:
+            - $formkit: switch
+              id: home_activity_enabled
+              name: showActivity
+              label: 显示站点动态
+              value: false
+              help: 在首页显示最新文章、碎碎念等动态流
+        - $formkit: group
+          name: memoCardsConfig
+          label: 随想碎片
+          value:
+            showMemoCards: false
+          children:
+            - $formkit: switch
+              id: home_memo_cards_enabled
+              name: showMemoCards
+              label: 显示随想碎片
+              value: false
+              help: 在首页显示随想碎片卡片轮播
+        - $formkit: group
+          name: lifeMomentsConfig
+          label: 生活回想
+          value:
+            showLifeMoments: false
+          children:
+            - $formkit: switch
+              id: home_life_moments_enabled
+              name: showLifeMoments
+              label: 显示生活回想
+              value: false
+              help: 在首页显示生活回想（碎碎念图片展示）
 
     - group: post
       label: 文章页面
@@ -298,308 +819,995 @@ spec:
               label: 启用
               value: true
               help: 是否显示该组件
-        - $formkit: number
-          name: relatedCount
-          label: 相关文章数量
-          value: 3
-          min: 2
-          max: 6
-          step: 1
-          help: 相关文章组件显示的文章数量
-        - $formkit: checkbox
-          name: showCopyright
-          label: 显示版权信息
-          value: true
-          help: 在文章底部显示版权声明
-        - $formkit: textarea
-          name: copyrightText
-          label: 版权声明文字
-          value: "本文采用 <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\" target=\"_blank\" class=\"copyright-license\">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。"
-        - $formkit: checkbox
-          name: showReward
-          label: 显示打赏组件
-          value: false
-          help: 在文章底部显示打赏组件
-        - $formkit: attachment
-          name: rewardQrCode
-          label: 打赏二维码
-          help: 上传打赏二维码图片
-        - $formkit: text
-          name: rewardTitle
-          label: 打赏标题
-          value: "赞赏支持"
-          help: 打赏组件的标题
-        - $formkit: textarea
-          name: rewardText
-          label: 打赏说明
-          value: "如果觉得文章对你有帮助，可以请作者喝杯咖啡 ☕"
-          help: 打赏组件的说明文字
+        - $formkit: group
+          name: relatedConfig
+          label: 相关文章设置
+          value:
+            showRelated: true
+            relatedCount: 3
+          children:
+            - $formkit: switch
+              id: post_related_enabled
+              name: showRelated
+              label: 显示相关文章
+              value: true
+              help: 在侧边栏显示相关文章组件
+            - $formkit: number
+              name: relatedCount
+              label: 相关文章数量
+              value: 3
+              min: 2
+              max: 6
+              step: 1
+              help: 相关文章组件显示的文章数量
+              if: $get(post_related_enabled).value
+        - $formkit: group
+          name: scrollbarConfig
+          label: 页面滚动条
+          value:
+            showScrollbar: false
+          children:
+            - $formkit: switch
+              id: post_scrollbar_enabled
+              name: showScrollbar
+              label: 显示页面滚动条
+              value: false
+              help: 在文章详情页右侧显示一个跟随主题色的细滚动条，默认隐藏
+        - $formkit: group
+          name: outdatedNoticeConfig
+          label: 文章过期提示
+          value:
+            showOutdatedNotice: true
+          children:
+            - $formkit: switch
+              id: post_outdated_enabled
+              name: showOutdatedNotice
+              label: 显示文章过期提示
+              value: true
+              help: 文章发布超过一定天数后，在文章顶部显示时效性提示
+        - $formkit: group
+          name: headingIconsConfig
+          label: 标题装饰图标
+          value:
+            showHeadingIcons: true
+          children:
+            - $formkit: switch
+              id: post_heading_icons_enabled
+              name: showHeadingIcons
+              label: 显示标题装饰图标
+              value: true
+              help: 在文章各级标题前显示装饰图标，文章页面也提供切换按钮
+        - $formkit: group
+          name: backgroundConfig
+          label: 背景壁纸设置
+          value:
+            enableBackground: false
+            backgroundApi: "https://api.elaina.cat/random"
+            backgroundApiMobile: "https://api.elaina.cat/random/mobile"
+            backgroundBlur: 3
+          children:
+            - $formkit: switch
+              id: post_bg_enabled
+              name: enableBackground
+              label: 启用背景壁纸
+              value: false
+              help: 在文章详情页顶部显示随机背景壁纸
+            - $formkit: text
+              name: backgroundApi
+              label: 背景壁纸 API
+              value: "https://api.elaina.cat/random"
+              help: 壁纸 API 地址，每行一个图片 URL，支持 API 返回多行 URL（每行一个）
+              if: $get(post_bg_enabled).value
+            - $formkit: text
+              name: backgroundApiMobile
+              label: 移动端壁纸 API
+              value: "https://api.elaina.cat/random/mobile"
+              help: 移动端专用 API，留空则使用桌面端 API
+              if: $get(post_bg_enabled).value
+            - $formkit: number
+              name: backgroundBlur
+              label: 背景模糊程度
+              value: 3
+              min: 0
+              max: 20
+              step: 1
+              help: 背景图片的模糊程度，数值越大越模糊，0 为不模糊
+              if: $get(post_bg_enabled).value
+        - $formkit: group
+          name: copyrightConfig
+          label: 版权信息设置
+          value:
+            showCopyright: true
+            copyrightText: "本文采用 <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\" target=\"_blank\" class=\"copyright-license\">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。"
+          children:
+            - $formkit: switch
+              id: post_copyright_enabled
+              name: showCopyright
+              label: 显示版权信息
+              value: true
+              help: 在文章底部显示版权声明
+            - $formkit: textarea
+              name: copyrightText
+              label: 版权声明文字
+              value: "本文采用 <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\" target=\"_blank\" class=\"copyright-license\">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。"
+              if: $get(post_copyright_enabled).value
+        - $formkit: group
+          name: shareConfig
+          label: 分享按钮
+          value:
+            showShare: true
+          children:
+            - $formkit: switch
+              id: post_share_enabled
+              name: showShare
+              label: 显示分享按钮
+              value: true
+              help: 在文章底部显示分享按钮（复制链接、微博、微信、QQ）
+        - $formkit: group
+          name: rewardConfig
+          label: 打赏设置
+          value:
+            showReward: false
+            rewardQrCode: ""
+            rewardTitle: "赞赏支持"
+            rewardText: "如果觉得文章对你有帮助，可以请作者喝杯咖啡"
+          children:
+            - $formkit: switch
+              id: post_reward_enabled
+              name: showReward
+              label: 显示打赏组件
+              value: false
+              help: 在文章底部显示打赏组件
+            - $formkit: attachment
+              name: rewardQrCode
+              label: 打赏二维码
+              help: 上传打赏二维码图片
+              if: $get(post_reward_enabled).value
+            - $formkit: text
+              name: rewardTitle
+              label: 打赏标题
+              value: "赞赏支持"
+              help: 打赏组件的标题
+              if: $get(post_reward_enabled).value
+            - $formkit: textarea
+              name: rewardText
+              label: 打赏说明
+              value: "如果觉得文章对你有帮助，可以请作者喝杯咖啡"
+              help: 打赏组件的说明文字
+              if: $get(post_reward_enabled).value
 
     - group: footer
       label: 页脚设置
       formSchema:
-        - $formkit: text
-          name: icp
-          label: ICP 备案号
-          value: ""
-          help: 网站备案号，留空则不显示
-        - $formkit: text
-          name: policeRecord
-          label: 公安备案号
-          value: ""
-          help: 公安备案号，留空则不显示
-        - $formkit: text
-          name: startYear
-          label: 建站年份
-          value: "2024"
-          help: 用于显示版权年份范围
-        - $formkit: checkbox
-          name: showRss
-          label: 显示 RSS 订阅
-          value: true
-        - $formkit: checkbox
-          name: showPoweredBy
-          label: 显示 Powered by
-          value: true
-          help: 是否显示"由 Halo 驱动"
-        - $formkit: checkbox
-          name: showProvider
-          label: 显示服务商标识
-          value: false
-          help: 在页脚显示"本站由 [Logo] 提供支持"
-        - $formkit: attachment
-          name: providerLogo
-          label: 服务商 Logo
-          help: 上传服务商的 Logo 图片
-        - $formkit: text
-          name: providerName
-          label: 服务商名称
-          value: ""
-          help: 服务商名称，用于 alt 属性
-        - $formkit: text
-          name: providerUrl
-          label: 服务商链接
-          value: ""
-          help: 点击 Logo 跳转的链接，留空则不可点击
-        - $formkit: textarea
-          name: about
-          label: 关于文字
-          value: "一个热爱技术的开发者，记录生活，分享技术。"
-          help: 显示在页脚的简短介绍
+        - $formkit: group
+          name: icpConfig
+          label: ICP 备案设置
+          value:
+            showIcp: false
+            icp: ""
+            icpUrl: "https://beian.miit.gov.cn/"
+            icpLogoUrl: ""
+            icpLogoSize: 20
+          children:
+            - $formkit: switch
+              id: footer_icp_enabled
+              name: showIcp
+              label: 显示 ICP 备案
+              value: false
+              help: 在页脚显示 ICP 备案信息
+            - $formkit: text
+              name: icp
+              label: ICP 备案号
+              value: ""
+              help: 网站备案号，留空则不显示
+              if: $get(footer_icp_enabled).value
+            - $formkit: text
+              name: icpUrl
+              label: ICP 备案链接
+              value: "https://beian.miit.gov.cn/"
+              help: ICP 备案号的跳转链接，默认为工信部备案查询页面
+              if: $get(footer_icp_enabled).value
+            - $formkit: attachment
+              name: icpLogoUrl
+              label: ICP 备案 Logo
+              value: ""
+              help: 从附件库选择 ICP 备案 Logo 图片，留空则显示默认图标
+              if: $get(footer_icp_enabled).value
+            - $formkit: number
+              name: icpLogoSize
+              label: ICP 备案 Logo 大小
+              value: 20
+              min: 16
+              max: 40
+              step: 1
+              help: ICP 备案 Logo 的显示长宽大小，单位为像素
+              if: $get(footer_icp_enabled).value
+        - $formkit: group
+          name: policeConfig
+          label: 公安备案设置
+          value:
+            showPolice: false
+            policeRecord: ""
+            policeRecordUrl: "http://www.beian.gov.cn/portal/registerSystemInfo"
+            policeLogoUrl: ""
+            policeLogoSize: 20
+          children:
+            - $formkit: switch
+              id: footer_police_enabled
+              name: showPolice
+              label: 显示公安备案
+              value: false
+              help: 在页脚显示公安备案信息
+            - $formkit: text
+              name: policeRecord
+              label: 公安备案号
+              value: ""
+              help: 公安备案号，留空则不显示
+              if: $get(footer_police_enabled).value
+            - $formkit: text
+              name: policeRecordUrl
+              label: 公安备案链接
+              value: "http://www.beian.gov.cn/portal/registerSystemInfo"
+              help: 公安备案号的跳转链接，默认为公安备案查询页面
+              if: $get(footer_police_enabled).value
+            - $formkit: attachment
+              name: policeLogoUrl
+              label: 公安备案 Logo
+              value: ""
+              help: 从附件库选择公安备案 Logo 图片，留空则显示默认图标
+              if: $get(footer_police_enabled).value
+            - $formkit: number
+              name: policeLogoSize
+              label: 公安备案 Logo 大小
+              value: 20
+              min: 16
+              max: 40
+              step: 1
+              help: 公安备案 Logo 的显示长宽大小，单位为像素
+              if: $get(footer_police_enabled).value
+        - $formkit: group
+          name: runtimeConfig
+          label: 运行时间设置
+          value:
+            showRuntime: false
+            startYear: "2024"
+            runtimeStartDate: "2024-01-01"
+          children:
+            - $formkit: switch
+              id: footer_runtime_enabled
+              name: showRuntime
+              label: 显示运行时间
+              value: false
+              help: 在页脚显示“本站已运行 XX 天 XX 小时 XX 分钟 XX 秒”的实时跳动计时
+            - $formkit: text
+              name: startYear
+              label: 建站年份
+              value: "2024"
+              help: 用于显示版权年份范围
+              if: $get(footer_runtime_enabled).value
+            - $formkit: text
+              name: runtimeStartDate
+              label: 建站精确日期
+              value: "2024-01-01"
+              placeholder: "2024-01-01"
+              help: 运行时间的起算日期，格式 YYYY-MM-DD，留空则使用建站年份的 1 月 1 日
+              if: $get(footer_runtime_enabled).value
+        - $formkit: group
+          name: onlineStatusConfig
+          label: 页脚在线状态
+          value:
+            showOnlineStatus: true
+          children:
+            - $formkit: switch
+              id: footer_online_status_enabled
+              name: showOnlineStatus
+              label: 开启页脚在线状态
+              value: true
+              help: 依赖 online-user 在线统计插件，在页脚展示连接状态、当前在线人数和活跃页面数；关闭后将隐藏该区域，并停止请求插件公开接口。
+        - $formkit: group
+          name: rssConfig
+          label: RSS 订阅
+          value:
+            showRss: true
+          children:
+            - $formkit: switch
+              id: footer_rss_enabled
+              name: showRss
+              label: 显示 RSS 订阅
+              value: true
+        - $formkit: group
+          name: poweredByConfig
+          label: Powered by
+          value:
+            showPoweredBy: true
+          children:
+            - $formkit: switch
+              id: footer_powered_enabled
+              name: showPoweredBy
+              label: 显示 Powered by
+              value: true
+              help: 是否显示“由 Halo 驱动”
+        - $formkit: group
+          name: providerConfig
+          label: 服务商标识
+          value:
+            showProvider: false
+            providerLogo: ""
+            providerName: ""
+            providerUrl: ""
+          children:
+            - $formkit: switch
+              id: footer_provider_enabled
+              name: showProvider
+              label: 显示服务商标识
+              value: false
+              help: 在页脚显示本站由服务商提供支持
+            - $formkit: attachment
+              name: providerLogo
+              label: 服务商 Logo
+              help: 上传服务商的 Logo 图片
+              if: $get(footer_provider_enabled).value
+            - $formkit: text
+              name: providerName
+              label: 服务商名称
+              value: ""
+              help: 服务商名称，用于 alt 属性
+              if: $get(footer_provider_enabled).value
+            - $formkit: text
+              name: providerUrl
+              label: 服务商链接
+              value: ""
+              help: 点击 Logo 跳转的链接，留空则不可点击
+              if: $get(footer_provider_enabled).value
+        - $formkit: group
+          name: privacyConfig
+          label: 隐私政策
+          value:
+            showPrivacy: true
+          children:
+            - $formkit: switch
+              id: footer_privacy_enabled
+              name: showPrivacy
+              label: 显示隐私政策
+              value: true
+              help: 在页脚显示隐私政策链接
+            - $formkit: textarea
+              name: privacyContent
+              label: 隐私政策内容
+              value: ""
+              help: 隐私政策的详细内容，支持 Markdown 语法
+              if: $get(footer_privacy_enabled).value
+        - $formkit: group
+          name: termsConfig
+          label: 服务条款
+          children:
+            - $formkit: switch
+              id: footer_terms_enabled
+              name: showTerms
+              label: 显示服务条款
+              value: true
+              help: 在页脚显示服务条款链接
+            - $formkit: textarea
+              name: termsContent
+              label: 服务条款内容
+              value: ""
+              help: 服务条款的详细内容，支持 Markdown 语法
+              if: $get(footer_terms_enabled).value
 
     - group: sidebar
       label: 侧边栏设置
       formSchema:
-        - $formkit: checkbox
-          name: showFortune
-          label: 显示一言
-          value: true
-          help: 是否显示一言模块
-        - $formkit: text
-          name: hitokotoApi
-          label: 一言 API 地址
-          value: "https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=i&c=k"
-          help: 一言 API 地址，留空则使用默认地址。默认文字为"热爱可抵岁月漫长"
-        - $formkit: checkbox
-          name: showTagCloud
-          label: 显示标签云
-          value: true
-          help: 是否显示标签云模块
-        - $formkit: checkbox
-          name: showHotPosts
-          label: 显示热门文章
-          value: true
-        - $formkit: number
-          name: hotPostsCount
-          label: 热门文章数量
-          value: 5
-          min: 3
-          max: 10
-          step: 1
-        - $formkit: checkbox
-          name: showRecentComments
-          label: 显示最新评论
-          value: true
-        - $formkit: number
-          name: recentCommentsCount
-          label: 最新评论数量
-          value: 5
-          min: 3
-          max: 10
-          step: 1
-
+        - $formkit: group
+          name: fortuneConfig
+          label: 一言设置
+          children:
+            - $formkit: switch
+              id: sidebar_fortune_enabled
+              name: showFortune
+              label: 显示一言
+              value: true
+              help: 是否显示一言模块
+            - $formkit: text
+              name: hitokotoApi
+              label: 一言 API 地址
+              value: "https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=i&c=k"
+              help: 一言 API 地址，留空则使用默认地址。默认文字为“热爱可抵岁月漫长”
+              if: $get(sidebar_fortune_enabled).value
+        - $formkit: group
+          name: tagCloudConfig
+          label: 标签云
+          children:
+            - $formkit: switch
+              id: sidebar_tagcloud_enabled
+              name: showTagCloud
+              label: 显示标签云
+              value: true
+              help: 是否显示标签云模块
+        - $formkit: group
+          name: hotPostsConfig
+          label: 热门文章
+          children:
+            - $formkit: switch
+              id: sidebar_hotposts_enabled
+              name: showHotPosts
+              label: 显示热门文章
+              value: true
+            - $formkit: number
+              name: hotPostsCount
+              label: 热门文章数量
+              value: 5
+              min: 3
+              max: 10
+              step: 1
+              if: $get(sidebar_hotposts_enabled).value
+        - $formkit: group
+          name: recentCommentsConfig
+          label: 最新评论
+          children:
+            - $formkit: switch
+              id: sidebar_comments_enabled
+              name: showRecentComments
+              label: 显示最新评论
+              value: true
+            - $formkit: number
+              name: recentCommentsCount
+              label: 最新评论数量
+              value: 5
+              min: 3
+              max: 10
+              step: 1
+              if: $get(sidebar_comments_enabled).value
     - group: about
       label: 关于页面
       formSchema:
-        - $formkit: repeater
-          name: tagsLeft
-          label: 左侧标签
-          help: 显示在头像左侧的标签，最多3个
-          value:
-            - text: "热爱开源"
-            - text: "设计爱好者"
-            - text: "终身学习"
+        - $formkit: group
+          name: tagsConfig
+          label: 个人标签
           children:
-            - $formkit: text
-              name: text
-              label: 标签文字
-              validation: required
-        - $formkit: repeater
-          name: tagsRight
-          label: 右侧标签
-          help: 显示在头像右侧的标签，最多3个
-          value:
-            - text: "前端开发"
-            - text: "独立开发者"
-            - text: "折腾爱好者"
+            - $formkit: switch
+              id: about_tags_enabled
+              name: showTags
+              label: 显示个人标签
+              value: false
+              help: 在关于页面头像两侧显示个人标签
+            - $formkit: repeater
+              name: tagsLeft
+              if: $get(about_tags_enabled).value
+              label: 左侧标签
+              help: 显示在头像左侧的标签，最多 3 个
+              value:
+                - text: "热爱开源"
+                - text: "设计爱好者"
+                - text: "终身学习"
+              children:
+                - $formkit: text
+                  name: text
+                  label: 标签文字
+                  validation: required
+            - $formkit: repeater
+              name: tagsRight
+              if: $get(about_tags_enabled).value
+              label: 右侧标签
+              help: 显示在头像右侧的标签，最多 3 个
+              value:
+                - text: "前端开发"
+                - text: "独立开发者"
+                - text: "折腾爱好者"
+              children:
+                - $formkit: text
+                  name: text
+                  label: 标签文字
+                  validation: required
+        - $formkit: group
+          name: mascotConfig
+          label: 吉祥物
           children:
+            - $formkit: switch
+              id: about_mascot_enabled
+              name: showMascot
+              label: 显示吉祥物
+              value: false
+              help: 是否在关于页面显示吉祥物（站在卡片上的小人）
+            - $formkit: attachment
+              name: mascotImage
+              label: 吉祥物图片
+              value: ""
+              help: 自定义吉祥物图片，留空使用默认图片，支持 GIF 动图
+              if: $get(about_mascot_enabled).value
             - $formkit: text
-              name: text
-              label: 标签文字
-              validation: required
-        - $formkit: repeater
-          name: skills
-          label: 技能列表
-          help: 在关于页面显示的技能，最多8个
-          value:
-            - name: "JavaScript"
-              level: 90
-              icon: "js"
-            - name: "TypeScript"
-              level: 85
-              icon: "ts"
-            - name: "React"
-              level: 88
-              icon: "react"
-            - name: "Vue"
-              level: 82
-              icon: "vue"
-            - name: "Node.js"
-              level: 75
-              icon: "node"
-            - name: "CSS / Sass"
-              level: 92
-              icon: "css"
-          children:
-            - $formkit: text
-              name: name
-              label: 技能名称
-            - $formkit: number
-              name: level
-              label: 熟练度
-              min: 0
-              max: 100
-              step: 5
-            - $formkit: select
-              name: icon
-              label: 图标
-              options:
-                - label: JavaScript
-                  value: js
-                - label: TypeScript
-                  value: ts
-                - label: React
-                  value: react
-                - label: Vue
-                  value: vue
-                - label: Node.js
-                  value: node
-                - label: CSS
-                  value: css
-                - label: HTML
-                  value: html
-                - label: Python
-                  value: python
-        - $formkit: textarea
-          name: aboutSite
+              name: mascotText
+              label: 吉祥物文字
+              value: "嘿，你好呀"
+              help: 吉祥物旁边显示的文字
+              if: $get(about_mascot_enabled).value
+        - $formkit: group
+          name: aboutSiteConfig
           label: 关于本站
-          value: "嗨，欢迎来到我的小站。这里是我记录技术探索、分享生活感悟的地方。\n\n作为一名前端开发者，我热衷于探索新技术，追求简洁优雅的代码。工作之余，我喜欢折腾各种有趣的项目，也会在这里分享一些心得。"
-          help: 显示在关于页面的"关于本站"部分
-        - $formkit: textarea
-          name: siteHistory
+          children:
+            - $formkit: switch
+              id: about_site_enabled
+              name: showAboutSite
+              label: 显示关于本站
+              value: false
+              help: 在关于页面显示“关于本站”部分
+            - $formkit: textarea
+              name: aboutSite
+              label: 关于本站
+              value: "嗨，欢迎来到我的小站。这里是我记录技术探索、分享生活感悟的地方。\n\n作为一名前端开发者，我热衷于探索新技术，追求简洁优雅的代码。工作之余，我喜欢折腾各种有趣的项目，也会在这里分享一些心得。"
+              help: 显示在关于页面的“关于本站”部分
+              if: $get(about_site_enabled).value
+        - $formkit: group
+          name: skillsConfig
+          label: 技能列表
+          children:
+            - $formkit: switch
+              id: about_skills_enabled
+              name: showSkills
+              label: 显示技能列表
+              value: false
+              help: 在关于页面显示技能卡片
+            - $formkit: repeater
+              name: skills
+              label: 技能列表
+              help: 在关于页面显示的技能。图标优先级：自定义图片 > Iconify 图标 > 内置图标
+              if: $get(about_skills_enabled).value
+              value:
+                - name: "JavaScript"
+                  level: 90
+                  icon: "js"
+                  customIcon: ""
+                  iconifyIcon: ""
+                  iconColor: ""
+                - name: "TypeScript"
+                  level: 85
+                  icon: "ts"
+                  customIcon: ""
+                  iconifyIcon: ""
+                  iconColor: ""
+                - name: "React"
+                  level: 88
+                  icon: "react"
+                  customIcon: ""
+                  iconifyIcon: ""
+                  iconColor: ""
+                - name: "Vue"
+                  level: 82
+                  icon: "vue"
+                  customIcon: ""
+                  iconifyIcon: ""
+                  iconColor: ""
+                - name: "Node.js"
+                  level: 75
+                  icon: "node"
+                  customIcon: ""
+                  iconifyIcon: ""
+                  iconColor: ""
+                - name: "CSS / Sass"
+                  level: 92
+                  icon: "css"
+                  customIcon: ""
+                  iconifyIcon: ""
+                  iconColor: ""
+              children:
+                - $formkit: text
+                  name: name
+                  label: 技能名称
+                - $formkit: number
+                  name: level
+                  label: 熟练度
+                  min: 0
+                  max: 100
+                  step: 5
+                - $formkit: attachment
+                  name: customIcon
+                  label: 自定义图标图片
+                  help: 从附件库选择图标图片（优先级最高），建议正方形 PNG/SVG，尺寸 64x64 以上
+                - $formkit: text
+                  name: iconifyIcon
+                  label: Iconify 图标
+                  placeholder: "skill-icons:javascript"
+                  help: "从 Iconify 图标库输入图标名称（如 skill-icons:javascript、logos:vue），可在 https://icon-sets.iconify.design 查找。优先级高于内置图标"
+                - $formkit: select
+                  name: icon
+                  label: 内置图标（兜底）
+                  options:
+                    - label: 无（使用上方自定义图标）
+                      value: none
+                    - label: JavaScript
+                      value: js
+                    - label: TypeScript
+                      value: ts
+                    - label: React
+                      value: react
+                    - label: Vue
+                      value: vue
+                    - label: Node.js
+                      value: node
+                    - label: CSS
+                      value: css
+                    - label: HTML
+                      value: html
+                    - label: Python
+                      value: python
+                  help: 当自定义图片和 Iconify 图标都为空时，使用此内置图标
+                - $formkit: text
+                  name: iconColor
+                  label: 图标背景色
+                  placeholder: "#3178c6"
+                  help: 自定义图标背景色（CSS 颜色值），留空则使用默认主题色
+        - $formkit: group
+          name: siteHistoryConfig
           label: 建站历程
-          value: "始建于 2024 年，纯个人兴趣建站，记录技术与生活。\n\n最初使用 Hexo 搭建，后迁移至 Halo，体验更现代化的博客系统。\n\n记录生活中的点滴，分享技术探索的心得，收藏有趣的发现，顺便当做备忘录。\n\n经历了多次改版、换主题、折腾服务器，一直靠热爱支撑，毕竟它承载着成长和回忆。"
-          help: 显示在关于页面的"建站历程"部分
-        - $formkit: checkbox
-          name: showForeverBlog
-          label: 显示十年之约
-          value: true
-          help: 是否在关于页面显示十年之约倒计时组件
-        - $formkit: text
-          name: foreverBlogStartDate
-          label: 建站日期
-          value: "2024-01-01"
-          help: 建站日期，格式：YYYY-MM-DD（如：2024-01-01），用于计算十年之约倒计时
-        - $formkit: checkbox
-          name: showAfdian
-          label: 显示爱发电赞助
-          value: false
-          help: 是否在关于页面显示爱发电赞助者组件（需要安装爱发电插件）
-        - $formkit: text
-          name: afdianUrl
-          label: 爱发电链接
-          value: ""
-          help: 你的爱发电主页链接，如 https://afdian.net/a/username，留空则不显示"成为赞助者"按钮
-
+          children:
+            - $formkit: switch
+              id: about_history_enabled
+              name: showSiteHistory
+              label: 显示建站历程
+              value: false
+              help: 在关于页面显示“建站历程”部分
+            - $formkit: textarea
+              name: siteHistory
+              label: 建站历程
+              value: "始建于 2024 年，纯个人兴趣建站，记录技术与生活。\n\n最初使用 Hexo 搭建，后迁移至 Halo，体验更现代化的博客系统。\n\n记录生活中的点滴，分享技术探索的心得，收藏有趣的发现，顺便当作备忘录。\n\n经历了多次改版、换主题、折腾服务器，一直靠热爱支撑，毕竟它承载着成长和回忆。"
+              help: 显示在关于页面的“建站历程”部分
+              if: $get(about_history_enabled).value
+        - $formkit: group
+          name: contactConfig
+          label: 联系组件
+          value:
+            showContact: true
+          children:
+            - $formkit: switch
+              id: about_contact_enabled
+              name: showContact
+              label: 显示联系组件
+              value: true
+              help: 控制关于页面底部“联系我”组件显示或隐藏
+        - $formkit: group
+          name: steamConfig
+          label: Steam 游戏
+          children:
+            - $formkit: switch
+              id: about_steam_enabled
+              name: showSteam
+              label: 显示 Steam 游戏
+              value: false
+              help: 是否在关于页面显示 Steam 个人资料卡片（需要安装 plugin-steam 插件并在插件设置中配置 API Key 等信息）
+            - $formkit: switch
+              name: showBans
+              label: 显示封禁信息
+              value: true
+              if: $get(about_steam_enabled).value
+              help: 是否显示 VAC 封禁、游戏封禁、社区封禁、交易封禁等标签
+            - $formkit: switch
+              name: showStats
+              label: 显示统计数据
+              value: true
+              if: $get(about_steam_enabled).value
+              help: 是否显示游戏数、总时长、好友数、徽章数、XP 等统计
+            - $formkit: switch
+              name: showAchievements
+              label: 显示成就
+              value: true
+              if: $get(about_steam_enabled).value
+              help: 是否显示游戏成就进度和最近解锁成就
+            - $formkit: switch
+              name: showGameLibrary
+              label: 显示游戏库
+              value: true
+              if: $get(about_steam_enabled).value
+              help: 是否显示可折叠的游戏库列表
+            - $formkit: switch
+              name: showBadges
+              label: 显示徽章图标
+              value: true
+              if: $get(about_steam_enabled).value
+              help: 是否显示最近获得的徽章小图标
+            - $formkit: switch
+              name: showFriends
+              label: 显示好友数
+              value: true
+              if: $get(about_steam_enabled).value
+              help: 是否在统计区域显示好友数量
+        - $formkit: group
+          name: foreverBlogConfig
+          label: 十年之约
+          children:
+            - $formkit: switch
+              id: about_forever_enabled
+              name: showForeverBlog
+              label: 显示十年之约
+              value: false
+              help: 是否在关于页面显示十年之约倒计时组件
+            - $formkit: text
+              name: foreverBlogStartDate
+              label: 建站日期
+              value: "2024-01-01"
+              help: 建站日期，格式：YYYY-MM-DD，用于计算十年之约倒计时
+              if: $get(about_forever_enabled).value
+        - $formkit: group
+          name: afdianSettings
+          label: 爱发电设置
+          value:
+            showAfdian: false
+            afdianUrl: ""
+            showPlans: true
+            showProducts: true
+          children:
+            - $formkit: switch
+              id: afdian_show
+              name: showAfdian
+              label: 显示爱发电组件
+              help: 是否在关于页面显示爱发电组件（需要安装爱发电插件）
+              value: false
+            - $formkit: text
+              name: afdianUrl
+              if: $get(afdian_show).value
+              label: 爱发电链接
+              value: ""
+              help: 你的爱发电主页链接，如 https://afdian.com/a/username，留空则不显示“成为赞助者”按钮
+            - $formkit: switch
+              name: showPlans
+              if: $get(afdian_show).value
+              label: 显示发电方案
+              value: true
+              help: 是否显示发电方案（折叠面板，点击展开）
+            - $formkit: switch
+              name: showProducts
+              if: $get(afdian_show).value
+              label: 显示电铺商品
+              value: true
+              help: 是否显示电铺商品（折叠面板，点击展开）
     - group: seo
       label: SEO 优化
       formSchema:
-        - $formkit: text
-          name: keywords
-          label: 网站关键词
-          value: "博客,技术,前端,开发"
-          help: 用逗号分隔，用于 SEO
-        - $formkit: checkbox
-          name: enableJsonLd
-          label: 启用 JSON-LD
-          value: true
-          help: 启用结构化数据标记，有利于 SEO
-        - $formkit: text
-          name: baiduSiteVerification
-          label: 百度站点验证
-          value: ""
-          help: 百度站长平台验证代码
-        - $formkit: text
-          name: googleSiteVerification
-          label: Google 站点验证
-          value: ""
-          help: Google Search Console 验证代码
+        - $formkit: group
+          name: seoConfig
+          label: SEO 设置
+          children:
+            - $formkit: switch
+              id: seo_enabled
+              name: enableSeo
+              label: 启用 SEO 优化
+              value: true
+              help: 启用后将输出关键词、结构化数据等 SEO 相关标签
+            - $formkit: text
+              name: keywords
+              if: $get(seo_enabled).value
+              label: 网站关键词
+              value: "博客,技术,前端,开发"
+              help: 用逗号分隔，用于 SEO
+            - $formkit: checkbox
+              name: enableJsonLd
+              if: $get(seo_enabled).value
+              label: 启用 JSON-LD
+              value: true
+              help: 启用结构化数据标记，有利于 SEO
+            - $formkit: text
+              name: baiduSiteVerification
+              if: $get(seo_enabled).value
+              label: 百度站点验证
+              value: ""
+              help: 百度站长平台验证代码
+            - $formkit: text
+              name: googleSiteVerification
+              if: $get(seo_enabled).value
+              label: Google 站点验证
+              value: ""
+              help: Google Search Console 验证代码
 
     - group: watermark
-      label: 水印设置
+      label: 页面标题设置
       formSchema:
-        - $formkit: checkbox
-          name: enabled
-          label: 启用水印
-          value: true
-          help: 是否在页面各处显示装饰性水印（不影响功能）
-        - $formkit: text
-          name: text
-          label: 水印文字
-          value: "Serenity"
-          help: 自定义水印显示的文字，默认为站点标题
-        - $formkit: select
-          name: source
-          label: 水印来源
-          value: "custom"
-          options:
-            - label: 自定义文字
-              value: custom
-            - label: 使用站点标题
-              value: siteTitle
-          help: 选择水印文字的来源
-        - $formkit: number
-          name: opacity
-          label: 水印透明度
-          value: 0.05
-          min: 0.01
-          max: 0.2
-          step: 0.01
-          help: 水印的透明度，范围 0.01-0.2，默认 0.05（非常淡）
+        - $formkit: group
+          name: equipments
+          label: 装备页面
+          children:
+            - $formkit: switch
+              id: pt_equipments_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_equipments_enabled).value
+              label: 页面标题
+              value: "装备"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_equipments_enabled).value
+              label: 页面副标题
+              value: "工欲善其事，必先利其器"
+        - $formkit: group
+          name: projects
+          label: 项目展示
+          children:
+            - $formkit: switch
+              id: pt_projects_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_projects_enabled).value
+              label: 页面标题
+              value: "我的项目"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_projects_enabled).value
+              label: 页面副标题
+              value: "开源项目与作品集"
+        - $formkit: group
+          name: links
+          label: 友链页面
+          children:
+            - $formkit: switch
+              id: pt_links_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_links_enabled).value
+              label: 页面标题
+              value: "朋友们"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_links_enabled).value
+              label: 页面副标题
+              value: "海内存知己，天涯若比邻"
+        - $formkit: group
+          name: friendsCircle
+          label: 朋友圈
+          children:
+            - $formkit: switch
+              id: pt_fc_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_fc_enabled).value
+              label: 页面标题
+              value: "朋友圈"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_fc_enabled).value
+              label: 页面副标题
+              value: "发现朋友们的精彩内容"
+        - $formkit: group
+          name: moments
+          label: 碎碎念
+          children:
+            - $formkit: switch
+              id: pt_moments_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_moments_enabled).value
+              label: 页面标题
+              value: "碎碎念"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_moments_enabled).value
+              label: 页面副标题
+              value: "记录生活中的点滴，留住那些值得回忆的瞬间"
+        - $formkit: group
+          name: photos
+          label: 图库集
+          children:
+            - $formkit: switch
+              id: pt_photos_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_photos_enabled).value
+              label: 页面标题
+              value: "图库集"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_photos_enabled).value
+              label: 页面副标题
+              value: "用镜头记录生活的美好瞬间"
+        - $formkit: group
+          name: guestbook
+          label: 留言板
+          children:
+            - $formkit: switch
+              id: pt_guestbook_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_guestbook_enabled).value
+              label: 页面标题
+              value: "留言板"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_guestbook_enabled).value
+              label: 页面副标题
+              value: "来几句走心的评论吧，留下你的足迹"
+        - $formkit: group
+          name: tags
+          label: 标签页面
+          children:
+            - $formkit: switch
+              id: pt_tags_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_tags_enabled).value
+              label: 页面标题
+              value: "标签"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_tags_enabled).value
+              label: 页面副标题
+              value: "探索文章的标签世界"
+        - $formkit: group
+          name: archives
+          label: 归档页面
+          children:
+            - $formkit: switch
+              id: pt_archives_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_archives_enabled).value
+              label: 页面标题
+              value: "归档"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_archives_enabled).value
+              label: 页面副标题
+              value: "时光荏苒，文字留痕"
+        - $formkit: group
+          name: categories
+          label: 分类页面
+          children:
+            - $formkit: switch
+              id: pt_categories_enabled
+              name: enabled
+              label: 自定义标题
+              value: false
+              help: 启用后使用自定义标题和副标题
+            - $formkit: text
+              name: title
+              if: $get(pt_categories_enabled).value
+              label: 页面标题
+              value: "分类"
+            - $formkit: text
+              name: subtitle
+              if: $get(pt_categories_enabled).value
+              label: 页面副标题
+              value: "按分类浏览全部内容"
 
     - group: projects
       label: 项目展示
       formSchema:
+        - $formkit: text
+          name: githubToken
+          label: GitHub Token（可选）
+          placeholder: ghp_xxxxxxxxxxxx
+          help: 用于拉取私有仓库或提高 API 请求限制，前往 GitHub Settings > Developer settings > Personal access tokens 创建
         - $formkit: repeater
           name: githubRepos
           label: GitHub 项目列表
@@ -612,10 +1820,25 @@ spec:
               validation: required
               help: 完整的 GitHub 仓库链接，如 https://github.com/username/repo
               placeholder: "https://github.com/username/repo"
+            - $formkit: select
+              name: ownerType
+              label: 项目归属
+              value: "mine"
+              options:
+                - label: 我的项目
+                  value: mine
+                - label: 收藏项目
+                  value: starred
+              help: 区分是自己开发的项目还是收藏的他人项目
+            - $formkit: text
+              name: category
+              label: 项目分类
+              help: 可自定义前台分组标题；留空时按项目归属显示为“我的项目”或“收藏项目”
+              placeholder: "我的项目"
         - $formkit: repeater
           name: customProjects
           label: 自定义项目列表
-          help: 手动添加项目信息，不依赖 GitHub API（适用于 GitHub 无法访问或非 GitHub 项目）
+          help: 手动添加项目信息，不依赖 GitHub API
           value: []
           children:
             - $formkit: text
@@ -630,6 +1853,21 @@ spec:
               validation: required
               help: 项目的访问链接
               placeholder: "https://example.com"
+            - $formkit: select
+              name: ownerType
+              label: 项目归属
+              value: "mine"
+              options:
+                - label: 我的项目
+                  value: mine
+                - label: 收藏项目
+                  value: starred
+              help: 区分是自己开发的项目还是收藏的他人项目
+            - $formkit: text
+              name: category
+              label: 项目分类
+              help: 可自定义前台分组标题；留空时按项目归属显示为“我的项目”或“收藏项目”
+              placeholder: "我的项目"
             - $formkit: textarea
               name: description
               label: 项目描述
@@ -646,12 +1884,12 @@ spec:
               placeholder: "JavaScript"
             - $formkit: number
               name: stars
-              label: Star 数量
+              label: Star 鏁伴噺
               value: 0
               help: 项目的 Star 数量（可选）
             - $formkit: number
               name: forks
-              label: Fork 数量
+              label: Fork 鏁伴噺
               value: 0
               help: 项目的 Fork 数量（可选）
             - $formkit: text
@@ -663,33 +1901,108 @@ spec:
     - group: links
       label: 友链页面
       formSchema:
-        - $formkit: text
-          name: ownerName
-          label: 站点名称
-          value: "Serenity's Blog"
-          help: 友链申请区域显示的站点名称，留空则使用基本设置中的站点标题
-        - $formkit: text
-          name: ownerUrl
-          label: 站点链接
-          value: "https://halo.aobp.cn/"
-          help: 友链申请区域显示的站点链接，留空则使用系统站点地址
-        - $formkit: attachment
-          name: ownerAvatar
-          label: 站点头像
-          value: "/upload/%E5%A4%B4%E5%83%8F.png"
-          help: 友链申请区域显示的站点头像，留空则使用基本设置中的站点 Logo
-        - $formkit: textarea
-          name: ownerDescription
-          label: 站点描述
-          value: "前端开发者 / 独立开发者 / 博主"
-          help: 友链申请区域显示的站点描述，留空则使用基本设置中的站点描述
-        - $formkit: checkbox
-          name: showApplyButton
-          label: 显示申请友链按钮
-          value: true
-          help: 是否在友链申请区域显示"申请友链 ›"按钮
-        - $formkit: text
-          name: offlineLabel
-          label: 失联友链标签
-          value: "失联咯~"
-          help: 失效友链卡片右上角显示的标签文字
+        - $formkit: group
+          name: linksConfig
+          label: 友链设置
+          children:
+            - $formkit: select
+              name: displayMode
+              label: 默认展示模式
+              value: stream
+              options:
+                - label: 一体川流
+                  value: stream
+                - label: 极简画廊
+                  value: minimal
+                - label: 泡泡流场
+                  value: orbit
+              help: 控制友链页面前台默认展示方式
+            - $formkit: switch
+              id: links_enabled
+              name: enabled
+              label: 启用友链设置
+              value: true
+              help: 启用后可自定义友链申请区域的站点信息
+            - $formkit: text
+              name: ownerName
+              if: $get(links_enabled).value
+              label: 站点名称
+              value: ""
+              placeholder: "例如：My Blog"
+              help: 友链申请区域显示的站点名称，留空则使用基本设置中的站点标题
+            - $formkit: text
+              name: ownerUrl
+              if: $get(links_enabled).value
+              label: 站点链接
+              value: ""
+              placeholder: "例如：https://example.com"
+              help: 友链申请区域显示的站点链接，留空则使用系统站点地址
+            - $formkit: attachment
+              name: ownerAvatar
+              if: $get(links_enabled).value
+              label: 站点头像
+              value: ""
+              help: 友链申请区域显示的站点头像，留空则使用基本设置中的站点 Logo
+            - $formkit: textarea
+              name: ownerDescription
+              if: $get(links_enabled).value
+              label: 站点描述
+              value: ""
+              placeholder: "例如：一个技术博客"
+              help: 友链申请区域显示的站点描述，留空则使用基本设置中的站点描述
+    - group: starGallery
+      label: 星图库页面
+      formSchema:
+        - $formkit: group
+          name: galleryConfig
+          label: 星图库设置
+          children:
+            - $formkit: select
+              name: displayMode
+              label: 星系联盟展示方式
+              value: bubble
+              options:
+                - label: 泡泡流场
+                  value: bubble
+                - label: 一体川流
+                  value: flow
+                - label: 极简画廊
+                  value: minimal
+              help: 控制星图库页面中“星系联盟”卡片的展示方式
+
+    - group: music
+      label: 音乐播放器
+      formSchema:
+        - $formkit: group
+          name: musicConfig
+          label: 播放器设置
+          children:
+            - $formkit: switch
+              id: music_enabled
+              name: enabled
+              label: 启用音乐播放器
+              value: false
+              help: 在页面左下角显示一个迷你音乐播放器。注意：为防止发生不必要的冲突，只配置其中一个即可。
+            - $formkit: text
+              name: playlistId
+              if: $get(music_enabled).value
+              label: 网易云官方接口（歌单 ID）
+              placeholder: "12345678"
+              help: 网易云音乐歌单 ID，从歌单页面 URL 中获取。
+            - $formkit: text
+              name: metingApi
+              if: $get(music_enabled).value
+              label: 自定义 API 地址
+              placeholder: "https://www.api.com/meting/?server=tencent&type=playlist&id=7538846482"
+              help: |
+                支持自定义 Meting-API。
+                数据源 server: netease（网易云音乐）、tencent（QQ 音乐）。
+                类型 type: song（单曲）、playlist（歌单）、albumlist（专辑列表）、search（搜索）。
+                类型 ID: 单曲/歌单 ID，搜索状态填 0。
+                搜索关键词 keyword（仅 search），如 泡沫、邓紫棋。
+                最高音质 br（仅 song/url），如 128 标准音质、320 极高音质、740 无损音质、990 Hi-Res。
+            - $formkit: checkbox
+              name: autoPlay
+              if: $get(music_enabled).value
+              label: 自动播放
+              value: false

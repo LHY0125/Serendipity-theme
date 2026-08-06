@@ -2,36 +2,54 @@
 <!--
   Theme: theme-Serenity
   Author: Serenity
-  Build: 2026-07-10 21:20:49
-  Fingerprint: 821f517d56c40c00
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
   Copyright (c) 2026 Serenity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org"
-      th:replace="~{modules/layout :: html(title = ${singlePage.spec.title}, content = ~{::content}, head = ~{::head})}">
+      th:replace="~{modules/layout :: html(title = ${(theme.config.watermark?.projects?.enabled == true ? theme.config.watermark.projects.title : null) ?: (singlePage.spec.title ?: '我的项目')}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/projects.css}" />
-  <script th:src="@{/assets/js/projects.js}" defer></script>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" th:content="${singlePage.spec.title}" />
+  <meta property="og:description" th:content="${singlePage.status.excerpt ?: (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle)}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" th:content="${singlePage.spec.title}" />
 </th:block>
 <th:block th:fragment="content">
   <main class="main">
+    <!-- PJAX：页面脚本置于 content 内，随局部刷新重新执行 -->
+    <script th:src="@{/assets/js/projects.js}" defer></script>
     <div class="container">
       <section class="projects-page">
         <div class="projects-header" data-aos="fade-up">
-          <h1 class="projects-title" th:text="${singlePage.spec.title}">我的项目</h1>
-          <p class="projects-subtitle">开源项目与作品集</p>
+          <h1 class="projects-title" th:text="${(theme.config.watermark?.projects?.enabled == true ? theme.config.watermark.projects.title : null) ?: (singlePage.spec.title ?: '我的项目')}">我的项目</h1>
+          <p class="projects-subtitle" th:text="${(theme.config.watermark?.projects?.enabled == true ? theme.config.watermark.projects.subtitle : null) ?: '开源项目与作品集'}">开源项目与作品集</p>
           <div class="projects-stats">
-            <div class="projects-stat">
-              <span class="projects-stat-num" id="totalProjects">0</span>
-              <span class="projects-stat-label">个项目</span>
+            <div class="projects-stats-row">
+              <div class="projects-stat">
+                <span class="projects-stat-num" id="totalProjects">0</span>
+                <span class="projects-stat-label">个项目</span>
+              </div>
+              <div class="projects-stat">
+                <span class="projects-stat-num" id="mineProjects">0</span>
+                <span class="projects-stat-label">我的</span>
+              </div>
+              <div class="projects-stat">
+                <span class="projects-stat-num" id="starredProjects">0</span>
+                <span class="projects-stat-label">收藏</span>
+              </div>
             </div>
-            <div class="projects-stat">
-              <span class="projects-stat-num" id="totalStars">0</span>
-              <span class="projects-stat-label">Stars</span>
-            </div>
-            <div class="projects-stat">
-              <span class="projects-stat-num" id="totalForks">0</span>
-              <span class="projects-stat-label">Forks</span>
+            <div class="projects-stats-row">
+              <div class="projects-stat">
+                <span class="projects-stat-num" id="totalStars">0</span>
+                <span class="projects-stat-label">Stars</span>
+              </div>
+              <div class="projects-stat">
+                <span class="projects-stat-num" id="totalForks">0</span>
+                <span class="projects-stat-label">Forks</span>
+              </div>
             </div>
           </div>
         </div>
@@ -43,28 +61,31 @@
           </div>
         </div>
 
-        <div class="projects-empty" id="projectsEmpty" style="display: none;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-          </svg>
-          <p>暂无项目</p>
-          <span>请在主题设置中添加 GitHub 项目链接</span>
+        <div class="projects-empty" id="projectsEmpty" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;width:100%;" data-aos="fade-up">
+          <div class="plugin-notice-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="40" height="40">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+          </div>
+          <h3 class="plugin-notice-title">暂无项目</h3>
+          <p class="plugin-notice-desc">请在主题设置中添加 GitHub 项目链接</p>
         </div>
       </section>
     </div>
   </main>
 
   <script th:inline="javascript">
-    const GITHUB_PROJECTS_RAW = /*[[${theme.config.projects?.githubRepos}]]*/ [];
-    const CUSTOM_PROJECTS_RAW = /*[[${theme.config.projects?.customProjects}]]*/ [];
+    var GITHUB_PROJECTS_RAW = /*[[${theme.config.projects?.githubRepos}]]*/ [];
+    var CUSTOM_PROJECTS_RAW = /*[[${theme.config.projects?.customProjects}]]*/ [];
+    var GITHUB_TOKEN = /*[[${theme.config.projects?.githubToken}]]*/ '';
     
     window.GITHUB_PROJECTS = Array.isArray(GITHUB_PROJECTS_RAW) 
       ? GITHUB_PROJECTS_RAW.map(item => {
-          if (typeof item === 'string') return item;
-          if (item && item.realNode && item.realNode.url) return item.realNode.url;
-          if (item && item.url) return item.url;
+          if (typeof item === 'string') return { url: item, ownerType: 'mine' };
+          if (item && item.realNode) return { url: item.realNode.url, ownerType: item.realNode.ownerType || 'mine', category: item.realNode.category || '' };
+          if (item && item.url) return { url: item.url, ownerType: item.ownerType || 'mine', category: item.category || '' };
           return null;
-        }).filter(url => url !== null && url !== '')
+        }).filter(item => item !== null && item.url !== '')
       : [];
     
     window.CUSTOM_PROJECTS = Array.isArray(CUSTOM_PROJECTS_RAW)
@@ -73,6 +94,49 @@
           return item;
         }).filter(item => item && item.name && item.url)
       : [];
+    
+    window.GITHUB_TOKEN = GITHUB_TOKEN || '';
   </script>
+
+  <!-- 版本详情弹窗 -->
+  <div class="releases-modal" id="releasesModal">
+    <div class="releases-modal-overlay" onclick="closeReleasesModal()"></div>
+    <div class="releases-modal-content">
+      <div class="releases-modal-header">
+        <div class="releases-project-info">
+          <img class="releases-project-avatar" id="releasesAvatar" src="" alt="" />
+          <div class="releases-project-meta">
+            <h2 class="releases-project-name" id="releasesProjectName">项目名称</h2>
+            <p class="releases-project-desc" id="releasesProjectDesc">项目描述</p>
+          </div>
+        </div>
+        <div class="releases-header-actions">
+          <a class="releases-github-link" id="releasesGithubLink" href="https://github.com" target="_blank" rel="noopener noreferrer" title="去 GitHub 查看" aria-label="去 GitHub 查看">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span class="sr-only">去 GitHub 查看</span>
+          </a>
+          <button class="releases-close-btn" onclick="closeReleasesModal()" aria-label="关闭">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="releases-modal-body" data-lenis-prevent>
+        <div class="releases-loading" id="releasesLoading">
+          <div class="loading-spinner"></div>
+          <p>正在加载版本信息...</p>
+        </div>
+        <div class="releases-empty" id="releasesEmpty" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;width:100%;">
+          <div class="plugin-notice-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="40" height="40">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h3 class="plugin-notice-title">暂无版本发布</h3>
+          <p class="plugin-notice-desc">该项目尚未发布任何版本</p>
+        </div>
+        <div class="releases-timeline" id="releasesTimeline"></div>
+      </div>
+    </div>
+  </div>
 </th:block>
 </html>

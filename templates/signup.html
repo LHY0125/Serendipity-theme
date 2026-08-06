@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+  Theme: theme-Serenity
+  Author: Serenity
+  Build: 2026-07-05 00:01:15
+  Fingerprint: 1a93cc3686d739b8
+  Copyright (c) 2026 Serenity. All rights reserved.
+-->
+
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    th:replace="~{gateway_fragments/layout :: layout(title = |注册 - ${site.title}|, head = ~{::head}, body = ~{::body})}"
+>
+    <head>
+        <script th:src="@{/assets/js/signup.js}" defer></script>
+    </head>
+    
+    <th:block th:fragment="body">
+        <!-- 注册视图 -->
+        <div class="gateway-view-panel active signup-view" id="view-register">
+            <div class="form-header form-header-compact">
+                <h2>注册</h2>
+                <p>开启一段全新的创作体验</p>
+            </div>
+
+            <div class="signup-form-scroll custom-scrollbar">
+                <form th:replace="~{gateway_fragments/signup::form}"></form>
+            </div>
+
+            <div class="gateway-switch gateway-switch-compact">
+                已经是老朋友了？ <a th:href="@{/login}">点击登录</a>
+            </div>
+        </div>
+    </th:block>
+</html>

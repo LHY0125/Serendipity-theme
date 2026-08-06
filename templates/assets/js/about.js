@@ -1,8 +1,8 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
@@ -12,12 +12,15 @@ function initForeverBlog() {
   const TEN_YEARS = 10 * 365 * 24 * 60 * 60 * 1000;
   
   function updateCountdown() {
+    const el = document.getElementById('progressPercent');
+    if (!el) return; // 元素不存在时跳过
+    
     const now = new Date();
     const elapsed = now - START_DATE;
     const remaining = TEN_YEARS - elapsed;
     
     if (remaining <= 0) {
-      document.getElementById('progressPercent').textContent = '100';
+      el.textContent = '100';
       document.getElementById('progressFill').style.width = '100%';
       document.getElementById('remainingTime').textContent = '0年:0天:00时:00分:00秒';
       return;
@@ -30,7 +33,7 @@ function initForeverBlog() {
     const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
     
     const progress = ((elapsed / TEN_YEARS) * 100).toFixed(2);
-    document.getElementById('progressPercent').textContent = progress;
+    el.textContent = progress;
     document.getElementById('progressFill').style.width = progress + '%';
     
     const remainingText = `${years}年:${days}天:${String(hours).padStart(2, '0')}时:${String(minutes).padStart(2, '0')}分:${String(seconds).padStart(2, '0')}秒`;
@@ -38,11 +41,24 @@ function initForeverBlog() {
   }
   
   updateCountdown();
-  setInterval(updateCountdown, 1000);
+  // 定时器存到 window，重入前先清理，防止泄漏
+  clearInterval(window.__aboutCountdownTimer);
+  window.__aboutCountdownTimer = setInterval(updateCountdown, 1000);
+  if (typeof window.__pjaxOnLeave === 'function') {
+    window.__pjaxOnLeave(function () {
+      clearInterval(window.__aboutCountdownTimer);
+    });
+  }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function initAboutPage() {
   if (document.getElementById('progressFill')) {
     initForeverBlog();
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAboutPage);
+} else {
+  initAboutPage();
+}

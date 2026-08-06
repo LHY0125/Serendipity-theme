@@ -1,31 +1,48 @@
 /**
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
 
-/**
- * 首页半圆天气时钟组件
- * 显示时间、城市、天气、温度
- */
 (function() {
-  const CACHE_KEY = 'serenity_weather_cache';
-  const CACHE_DURATION = 60 * 60 * 1000; // 1小时缓存
+  if (window.__weatherClockLoaded) {
+    if (typeof window.__weatherClockInit === 'function') window.__weatherClockInit();
+    return;
+  }
+  window.__weatherClockLoaded = true;
 
-  // 更新时间
+  const CACHE_KEY = 'serenity_weather_cache';
+  const CACHE_DURATION = 60 * 60 * 1000;
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY = 3000;
+
+  const LOADING_MESSAGES = {
+    city: ['寻找中...', '探索地球...', '定位星球...', '问问卫星...'],
+    weather: ['看看天空...', '观察云朵...', '询问太阳...'],
+    temp: ['测量中...', '感受温度...']
+  };
+
+  const OFFLINE_MESSAGES = {
+    city: ['神秘之地', '未知领域', '某个角落'],
+    weather: ['天气害羞了', '云朵走丢了', '天气休假中'],
+    temp: ['??°', '~°', '?°']
+  };
+
+  function randomMsg(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
   function updateTime() {
     const timeEl = document.getElementById('heroTime');
     if (!timeEl) return;
-    
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     timeEl.textContent = `${hours}:${minutes}`;
   }
 
-  // 获取缓存的天气数据
   function getCachedWeather() {
     try {
       const cached = localStorage.getItem(CACHE_KEY);
@@ -39,97 +56,94 @@
     return null;
   }
 
-  // 缓存天气数据
   function cacheWeather(data) {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({
-        data,
-        timestamp: Date.now()
+        data, timestamp: Date.now()
       }));
     } catch (e) {}
   }
 
-  // 根据天气代码获取对应的 QWeather 图标类名
   function getWeatherIcon(code) {
     const codeNum = parseInt(code);
-    // 心知天气代码 -> QWeather 图标代码映射
     const iconMap = {
-      // 晴
       0: '100', 1: '150', 2: '100', 3: '150',
-      // 多云
       4: '101', 5: '151', 6: '102', 7: '152', 8: '103', 9: '104',
-      // 阴
-      10: '104',
-      // 阵雨
-      11: '300', 12: '301', 13: '302',
-      // 雷阵雨
+      10: '104', 11: '300', 12: '301', 13: '302',
       14: '302', 15: '303', 16: '304', 17: '303', 18: '304',
-      // 雨
       19: '305', 20: '306', 21: '307', 22: '308', 23: '309', 24: '310', 25: '311',
-      // 雪
       26: '400', 27: '401', 28: '402', 29: '403', 30: '404', 31: '405', 32: '406',
-      // 雨夹雪
-      33: '404', 34: '405', 35: '406',
-      // 雾霾
-      36: '500', 37: '501', 38: '502',
-      // 风
-      39: '503'
+      33: '404', 34: '405', 35: '406', 36: '500', 37: '501', 38: '502', 39: '503'
     };
-    const qCode = iconMap[codeNum] || '999';
-    return `qi-${qCode}`;
+    return `qi-${iconMap[codeNum] || '999'}`;
   }
 
-  // 更新天气显示
+  function showLoading() {
+    const cityEl = document.getElementById('heroCity');
+    const weatherEl = document.getElementById('heroWeather');
+    const tempEl = document.getElementById('heroTemp');
+    if (cityEl) cityEl.textContent = randomMsg(LOADING_MESSAGES.city);
+    if (weatherEl) weatherEl.textContent = randomMsg(LOADING_MESSAGES.weather);
+    if (tempEl) tempEl.textContent = '--°';
+  }
+
+  function showOffline() {
+    const cityEl = document.getElementById('heroCity');
+    const weatherEl = document.getElementById('heroWeather');
+    const tempEl = document.getElementById('heroTemp');
+    if (cityEl) cityEl.textContent = randomMsg(OFFLINE_MESSAGES.city);
+    if (weatherEl) weatherEl.innerHTML = `<i class="qi-999"></i> ${randomMsg(OFFLINE_MESSAGES.weather)}`;
+    if (tempEl) tempEl.textContent = randomMsg(OFFLINE_MESSAGES.temp);
+  }
+
   function updateWeatherDisplay(data) {
     const cityEl = document.getElementById('heroCity');
     const weatherEl = document.getElementById('heroWeather');
     const tempEl = document.getElementById('heroTemp');
-
-    if (cityEl && data.city) {
-      cityEl.textContent = data.city;
-    }
+    if (cityEl && data.city) cityEl.textContent = data.city;
     if (weatherEl && data.text) {
-      const iconClass = getWeatherIcon(data.code);
-      weatherEl.innerHTML = `<i class="${iconClass}"></i> ${data.text}`;
+      weatherEl.innerHTML = `<i class="${getWeatherIcon(data.code)}"></i> ${data.text}`;
     }
-    if (tempEl && data.temperature) {
-      tempEl.textContent = `${data.temperature}°C`;
+    if (tempEl && data.temperature) tempEl.textContent = `${data.temperature}°C`;
+  }
+
+  async function fetchWithTimeout(url, timeout = 8000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
     }
   }
 
-  // 获取天气数据
-  async function fetchWeather() {
-    const config = window.WEATHER_CONFIG;
-    if (!config || !config.apiKey) {
-      console.log('Weather: No API key configured');
-      return;
-    }
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
-    // 先检查缓存
+  async function fetchWeather(retryCount = 0) {
+    const config = window.WEATHER_CONFIG;
+    if (!config || !config.apiKey) return;
+
     const cached = getCachedWeather();
     if (cached) {
       updateWeatherDisplay(cached);
       return;
     }
 
-    try {
-      // 使用 ipify.cn 获取 IP 地址（与 theme-clarity 相同的方式）
-      const ipResponse = await fetch('https://api.ipify.cn/?format=json');
-      const ipData = await ipResponse.json();
-      
-      if (!ipData.ip) {
-        throw new Error('IP Error');
-      }
+    if (retryCount === 0) showLoading();
 
-      // 调用心知天气 API，直接使用 IP 地址定位
-      const weatherResponse = await fetch(
-        `https://api.seniverse.com/v3/weather/now.json?key=${config.apiKey}&location=${ipData.ip}&language=zh-Hans&unit=c`
+    try {
+      // 直接让心知按访客公网 IP 自动定位（location=ip），无需依赖第三方 IP 查询服务
+      const weatherResponse = await fetchWithTimeout(
+        `https://api.seniverse.com/v3/weather/now.json?key=${config.apiKey}&location=ip&language=zh-Hans&unit=c`,
+        8000
       );
       const weatherData = await weatherResponse.json();
-
-      if (!weatherData.results || !weatherData.results[0]) {
-        throw new Error('Weather API Error');
-      }
+      if (!weatherData.results || !weatherData.results[0]) throw new Error('Weather API Error');
 
       const result = weatherData.results[0];
       const data = {
@@ -139,40 +153,55 @@
         city: result.location.name
       };
 
-      // 缓存并显示
       cacheWeather(data);
       updateWeatherDisplay(data);
-
     } catch (error) {
-      console.log('Weather fetch error:', error.message);
-      // 显示默认值
-      const cityEl = document.getElementById('heroCity');
-      if (cityEl) cityEl.textContent = '--';
+      if (retryCount < MAX_RETRIES) {
+        await delay(RETRY_DELAY);
+        return fetchWeather(retryCount + 1);
+      }
+      showOffline();
     }
   }
 
-  // 初始化
   function init() {
     const config = window.WEATHER_CONFIG;
     if (!config) return;
 
-    // 立即更新时间
-    if (config.showTime) {
-      updateTime();
-      // 每分钟更新时间
-      setInterval(updateTime, 60000);
+    // 清理上一次的时钟定时器（PJAX 重入）
+    if (window.__weatherClockTimer) {
+      clearInterval(window.__weatherClockTimer);
+      window.__weatherClockTimer = null;
     }
 
-    // 获取天气
+    if (config.showTime) {
+      updateTime();
+      window.__weatherClockTimer = setInterval(updateTime, 60000);
+    }
+
     if (config.showWeather || config.showTemperature || config.showCity) {
       fetchWeather();
     }
   }
 
-  // DOM 加载完成后初始化
+  // 一次性离场清理：清除时钟 interval（每次进入页面注册一次）
+  function registerLeave() {
+    if (typeof window.__pjaxOnLeave === 'function') {
+      window.__pjaxOnLeave(function () {
+        if (window.__weatherClockTimer) {
+          clearInterval(window.__weatherClockTimer);
+          window.__weatherClockTimer = null;
+        }
+      });
+    }
+  }
+
+  // 暴露供 PJAX 重入调用（先 init 再注册一次性离场清理）
+  window.__weatherClockInit = function () { init(); registerLeave(); };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', window.__weatherClockInit);
   } else {
-    init();
+    window.__weatherClockInit();
   }
 })();

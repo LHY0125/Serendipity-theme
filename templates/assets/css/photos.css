@@ -1,14 +1,10 @@
 /*
  * Theme: theme-Serenity
  * Author: Serenity
- * Build: 2026-07-10 21:20:49
- * Fingerprint: 821f517d56c40c00
+ * Build: 2026-07-05 00:01:15
+ * Fingerprint: 1a93cc3686d739b8
  * Copyright (c) 2026 Serenity. All rights reserved.
  */
-
-/* ========================================
-   图库页面 - 瀑布流布局
-   ======================================== */
 
 .photos-page {
   padding-top: calc(var(--header-height) + var(--space-8));
@@ -132,15 +128,78 @@
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--color-bg-secondary);
+  background: var(--color-bg-soft);
 }
 
 .photo-wrapper img {
   width: 100%;
   height: auto;
   display: block;
-  cursor: pointer;
-  transition: transform 0.4s ease;
+  cursor: zoom-in;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+/* 懒加载骨架屏 */
+.photo-wrapper img {
+  width: 100%;
+  display: block;
+  cursor: zoom-in;
+  transition: transform 0.4s ease, opacity 0.5s ease;
+  opacity: 0;
+}
+
+/* 图片未加载时给占位高度，让瀑布流正确分列 */
+.photo-wrapper:not(.img-loaded) img {
+  height: 220px;
+  object-fit: cover;
+}
+
+/* 图片加载完成后恢复自适应高度 */
+.photo-wrapper.img-loaded img {
+  height: auto;
+  opacity: 1;
+}
+
+/* 骨架屏：图片加载前的占位动画 */
+.photo-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg-mute);
+  border-radius: inherit;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.photo-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    var(--color-border) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: inherit;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  will-change: background-position;
+}
+
+.photo-wrapper.img-loaded::after,
+.photo-wrapper.img-loaded::before {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .photo-wrapper:hover img {
@@ -157,6 +216,7 @@
   background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .photo-time {
@@ -197,48 +257,53 @@
 }
 
 /* 灯箱 */
-.lightbox {
+.photo-lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.95);
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  cursor: zoom-out;
 }
 
-.lightbox.active {
+.photo-lightbox.active {
   opacity: 1;
   visibility: visible;
 }
 
-.lightbox-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-  font-size: 24px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.lightbox-close:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-.lightbox-img {
+.photo-lightbox-img {
   max-width: 90vw;
   max-height: 90vh;
   object-fit: contain;
   border-radius: var(--radius-md);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.photo-lightbox.active .photo-lightbox-img {
+  transform: scale(1);
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 36px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+  z-index: 1;
+}
+
+.photo-lightbox-close:hover {
+  color: #fff;
 }
 
 /* 响应式 */
