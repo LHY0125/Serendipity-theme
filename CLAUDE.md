@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Serendipity-Grace（`theme-serendipity`）是 **基于 [atangccc/Serenity-Grace](https://github.com/atangccc/Serenity-Grace) 二次开发的 Halo 2.x 博客主题**（GPL-3.0），樱花粉 + 湖水蓝配色，亮/暗双模式。所有模板代码在 `templates/` 下，无 package.json / Makefile / 编译步骤——**纯手写 HTML + CSS + JS**，通过 `th:` 属性注入 Thymeleaf 表达式。本仓库为 fork：`origin` 指向 `LHY0125/Serendipity-theme`，`upstream` 指向原作者 `atangccc/Serenity-Grace`（合并上游更新用 `git fetch upstream && git merge upstream/main`）。
 
+### 品牌署名约束（GPL 二次开发）
+
+本主题已整体改名 `Serenity` → `Serendipity`。但**以下 `Serenity`/`Serenity-Grace` 引用是刻意保留的致谢，不可替换**：README 的「致谢」段、`theme.yaml` 的 `description`（"基于 Serenity-Grace 二次开发"）、`theme.yaml` 的 `homepage/repo/issues`（指向上游 fork URL）。改品牌前先 `git grep Serenity` 甄别这些保留项，避免误删致谢。
+
 ## 开发与验证
 
 - **无构建、无 lint、无测试**。改完模板/资源后上传到 Halo 实例即可生效（用户博客：`blog.liuhangyv.top`，由腾讯云 Halo 托管）。
@@ -36,19 +40,22 @@ th:replace="~{modules/layout :: html(title = ..., content = ~{::content}, head =
 
 每个页面 = `head` fragment（本页 CSS + meta）+ `content` fragment（本页 HTML + 本页 JS）。Halo 模板变量：`site`（站点信息）、`theme.config`（主题设置）、`menuFinder`（菜单）、`archives` / `posts` / `post` / `tag` / `category` 等列表对象。归档/标签/分类是 Halo 内置路由（`/archives` `/tags` `/categories`），无需创建页面；`about` / `moments` / `links` / `guestbook` / `projects` / `photos` / `wishes` / `equipments` / `star-gallery` 等需后台创建自定义页面并选对应模板。
 
+**Thymeleaf inline JS 模式**：模板大量使用 `/*[[${theme.config.xxx}]]*/ 默认值` 形式——静态打开 HTML 时显示注释后的默认值，服务端渲染时被替换为真实配置值。改默认值改注释后的部分即可。
+
 ### 模块组件 `templates/modules/`
 
 `header.html`（导航 + 菜单，含下拉 + `nav-icon` 图标映射）、`footer.html`、`layout.html`、`nav-icon.html`（按 URL 匹配菜单图标）、`search-modal.html`、`watermark.html`。
 
 ### 网关页面 `templates/gateway_fragments/layout.html`
 
-登录/注册/登出页专属布局（fragment `layout(title, head, body)`），独立于主布局，引用 `theme-color-init.js` 与 `login.css`。品牌区 + 表单区（`body` fragment），壁纸读取首页背景配置。`login.html` / `signup.html` / `logout.html` 是内容体。
+登录/注册/登出页专属布局（fragment `layout(title, head, body)`），独立于主布局。**注意其主题色初始化用独立脚本 `theme-color-init.js`，与主布局 `modules/layout.html` 的 inline 初始化脚本是两套**——改主题色逻辑需两处同步。品牌区 + 表单区（`body` fragment），壁纸读取首页背景配置。`login.html` / `signup.html` / `logout.html` 是内容体。
 
 ### 资源目录 `templates/assets/`
 
 - `css/`、`js/` 按页面一对一命名（如 `index.html` ↔ `css/index.css` ↔ `js/archives.js`）
 - 第三方库**已本地化**：`lenis.min.js`、`swiper-bundle.min.js`、`aos.js`、`iconify.min.js`、`APlayer.min.js`、`Meting2.min.js`、`marked.min.js`、FontAwesome webfonts、ANI 动态光标（`fonts/cursor/`）
-- `public/` 静态图（logo、亮/暗背景 `lightbg.webp` / `darkbg.webp`），模板中以 `/themes/theme-serendipity/assets/...` 引用（路径含主题 `metadata.name`，改名需同步替换）
+- `public/` 静态图（logo、亮/暗背景 `lightbg.webp` / `darkbg.webp`）。
+- **资源引用有两种写法并存**：模板内多用 Thymeleaf 相对路径 `@{/assets/...}`（无需改）；部分模板与 JS（如 `cursor-init.js`、`star-gallery.js`）用硬编码绝对路径 `/themes/theme-serendipity/assets/...`——此路径含主题 `metadata.name`，改名需全局同步替换，且 `settings.yaml` 的 `metadata.name` 要与 `theme.yaml` 的 `settingName`/`configMapName` 对齐。
 
 ## PJAX 关键约定（易踩坑）
 
