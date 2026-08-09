@@ -1,14 +1,14 @@
 /**
- * Theme: theme-Serenity
- * Author: Serenity
+ * Theme: theme-serendipity
+ * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
- * Copyright (c) 2026 Serenity. All rights reserved.
+ * Copyright (c) 2026 Serendipity. All rights reserved.
  */
 
 /**
  * 通用灯箱模块
- * 用法：SerenityLightbox.create({ className, delegateSelector, getSrc })
+ * 用法：SerendipityLightbox.create({ className, delegateSelector, getSrc })
  *
  * @param {string}   className        - overlay 的 CSS 类名，如 'post-lightbox'
  * @param {string}   delegateSelector - 触发灯箱的图片选择器（事件委托）
@@ -16,7 +16,7 @@
  * @param {function} [guard]          - 可选，前置守卫，返回 false 则不创建灯箱
  * @returns {{ open, close, overlay }} 灯箱实例
  */
-window.SerenityLightbox = (function() {
+window.SerendipityLightbox = (function() {
   function create(opts) {
     var className        = opts.className;
     var delegateSelector = opts.delegateSelector;
@@ -119,11 +119,11 @@ function __serenityInitLightboxes() {
 
   window.__lightboxInitTimer = setTimeout(function() {
 
-    if (!window.__postLightbox && document.querySelector('.post-content img') && typeof SerenityLightbox !== 'undefined') {
+    if (!window.__postLightbox && document.querySelector('.post-content img') && typeof SerendipityLightbox !== 'undefined') {
 
       var guardResult = !(typeof lightGallery === 'function' || document.querySelector('.lg-container'));
       if (guardResult) {
-        window.__postLightbox = SerenityLightbox.create({
+        window.__postLightbox = SerendipityLightbox.create({
           className: 'post-lightbox',
           delegateSelector: '.post-content img',
           guard: function() { return guardResult; }
@@ -131,22 +131,22 @@ function __serenityInitLightboxes() {
       }
     }
 
-    if (!window.__photosLightbox && document.querySelector('.photo-wrapper img') && typeof SerenityLightbox !== 'undefined') {
-      window.__photosLightbox = SerenityLightbox.create({
+    if (!window.__photosLightbox && document.querySelector('.photo-wrapper img') && typeof SerendipityLightbox !== 'undefined') {
+      window.__photosLightbox = SerendipityLightbox.create({
         className: 'photo-lightbox',
         delegateSelector: '.photo-wrapper img'
       });
     }
 
-    if (!window.__momentLightbox && document.querySelector('.moment-media img') && typeof SerenityLightbox !== 'undefined') {
-      window.__momentLightbox = SerenityLightbox.create({
+    if (!window.__momentLightbox && document.querySelector('.moment-media img') && typeof SerendipityLightbox !== 'undefined') {
+      window.__momentLightbox = SerendipityLightbox.create({
         className: 'moment-lightbox',
         delegateSelector: '.moment-media img'
       });
     }
 
-    if (!window.__memoLightbox && document.querySelector('.memo-zone .photo-img') && typeof SerenityLightbox !== 'undefined') {
-      window.__memoLightbox = SerenityLightbox.create({
+    if (!window.__memoLightbox && document.querySelector('.memo-zone .photo-img') && typeof SerendipityLightbox !== 'undefined') {
+      window.__memoLightbox = SerendipityLightbox.create({
         className: 'memo-lightbox',
         delegateSelector: '.memo-zone .photo-img'
       });

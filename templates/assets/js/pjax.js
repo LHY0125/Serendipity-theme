@@ -1,13 +1,13 @@
 /**
- * Theme: theme-Serenity
- * Author: Serenity
+ * Theme: theme-serendipity
+ * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
- * Copyright (c) 2026 Serenity. All rights reserved.
+ * Copyright (c) 2026 Serendipity. All rights reserved.
  */
 
 /**
- * Serenity-Hue 轻量 PJAX 引擎
+ * Serendipity-Hue 轻量 PJAX 引擎
  * 目标：站内导航只替换 #pjax-main，保持持久层（含音乐胶囊）不被销毁，音乐连续播放。
  *
  * 设计要点：

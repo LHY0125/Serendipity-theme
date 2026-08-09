@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="screenshots/1.png" alt="Serenity-Grace Banner" width="800" />
+<img src="screenshots/1.png" alt="Serendipity-Grace Banner" width="800" />
 
 <br/>
 <br/>
 
-# 🌸 Serenity-Grace
+# 🌸 Serendipity-Grace
 
 **简约优雅的 Halo 2.x 博客主题**
 
@@ -240,6 +240,10 @@
 [GPL-3.0](LICENSE)
 
 本项目采用 [GNU General Public License v3.0](LICENSE) 协议开源。任何基于本项目的二次开发须保留同等开源协议、版权声明及致谢。
+
+### 🙏 致谢
+
+本主题基于 [atangccc/Serenity-Grace](https://github.com/atangccc/Serenity-Grace)（[GPL-3.0](LICENSE)）二次开发，保留原作者版权声明与致谢。原主题作者：Serenity（[github.com/atangccc](https://github.com/atangccc)）。
 
 <br/>
 

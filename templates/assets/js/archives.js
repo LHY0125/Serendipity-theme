@@ -1,9 +1,9 @@
 /**
- * Theme: theme-Serenity
- * Author: Serenity
+ * Theme: theme-serendipity
+ * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
- * Copyright (c) 2026 Serenity. All rights reserved.
+ * Copyright (c) 2026 Serendipity. All rights reserved.
  */
 
 function sortPinnedPosts() {
@@ -98,8 +98,8 @@ async function loadLatestComments() {
         const shortContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
         const postUrl = comment._postPermalink || '/';
 
-        const avatar = window.SerenityCommentAvatar
-          ? await window.SerenityCommentAvatar.resolve(comment)
+        const avatar = window.SerendipityCommentAvatar
+          ? await window.SerendipityCommentAvatar.resolve(comment)
           : (comment.owner?.avatar || '');
 
         return `

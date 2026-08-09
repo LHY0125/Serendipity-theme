@@ -1,9 +1,9 @@
 /**
- * Theme: theme-Serenity
- * Author: Serenity
+ * Theme: theme-serendipity
+ * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
- * Copyright (c) 2026 Serenity. All rights reserved.
+ * Copyright (c) 2026 Serendipity. All rights reserved.
  */
 
 /**
@@ -24,11 +24,11 @@
  */
 (function() {
   var s = document.createElement('script');
-  s.src = '/themes/theme-Serenity/assets/js/ani-cursor.bundle.js';
+  s.src = '/themes/theme-serendipity/assets/js/ani-cursor.bundle.js';
   s.onload = function() {
     var lib = window['ani-cursor.js'];
     if (!lib || !lib.LoadANICursorPromise) return;
-    var B = '/themes/theme-Serenity/assets/fonts/cursor/';
+    var B = '/themes/theme-serendipity/assets/fonts/cursor/';
     var urls = {
       arrow:  B + encodeURIComponent('指向arrow.ani'),
       beam:   B + encodeURIComponent('复制beam.ani'),

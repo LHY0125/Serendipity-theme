@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
-  Theme: theme-Serenity
-  Author: Serenity
+  Theme: theme-serendipity
+  Author: Serendipity
   Build: 2026-07-05 00:01:15
   Fingerprint: 1a93cc3686d739b8
-  Copyright (c) 2026 Serenity. All rights reserved.
+  Copyright (c) 2026 Serendipity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org" 
@@ -53,12 +53,12 @@
                fetchpriority="low"
                th:data-api="${theme.config.home.backgroundConfig.heroBackgroundApi}"
                th:data-api-mobile="${theme.config.home.backgroundConfig.heroBackgroundApiMobile}"
-               th:src="${theme.config.basic != null and theme.config.basic.defaultTheme == 'light' ? '/themes/theme-Serenity/assets/public/lightbg.webp' : '/themes/theme-Serenity/assets/public/darkbg.webp'}" />
+               th:src="${theme.config.basic != null and theme.config.basic.defaultTheme == 'light' ? '/themes/theme-serendipity/assets/public/lightbg.webp' : '/themes/theme-serendipity/assets/public/darkbg.webp'}" />
         </th:block>
         <th:block th:unless="${hasApi}">
           <th:block th:with="legacyBg = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackground != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackground)) ? theme.config.home.backgroundConfig.heroBackground : ''},
-                             lightBg = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackgroundLight != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackgroundLight)) ? theme.config.home.backgroundConfig.heroBackgroundLight : (!#strings.isEmpty(legacyBg) ? legacyBg : '/themes/theme-Serenity/assets/public/lightbg.webp')},
-                             darkBg = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackgroundDark != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackgroundDark)) ? theme.config.home.backgroundConfig.heroBackgroundDark : (!#strings.isEmpty(legacyBg) ? legacyBg : '/themes/theme-Serenity/assets/public/darkbg.webp')}">
+                             lightBg = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackgroundLight != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackgroundLight)) ? theme.config.home.backgroundConfig.heroBackgroundLight : (!#strings.isEmpty(legacyBg) ? legacyBg : '/themes/theme-serendipity/assets/public/lightbg.webp')},
+                             darkBg = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackgroundDark != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackgroundDark)) ? theme.config.home.backgroundConfig.heroBackgroundDark : (!#strings.isEmpty(legacyBg) ? legacyBg : '/themes/theme-serendipity/assets/public/darkbg.webp')}">
             <img class="hero-background-img hero-bg-theme-img"
                  alt=""
                  decoding="async"
@@ -258,7 +258,7 @@
             <div class="hero-avatar-wrapper">
               <div class="hero-avatar"
                    th:style="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.avatarGlowColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.avatarGlowColor) ? '--avatar-glow:' + theme.config.hero.colorConfig.avatarGlowColor : ''}">
-              <img th:src="${site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp'}" 
+              <img th:src="${site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp'}" 
                    th:alt="${site.title}" alt="Avatar" />
             </div>
               <!-- 天气时钟 - 头像下方 -->
@@ -283,14 +283,14 @@
               <h1 class="hero-name" th:if="${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.enableTypewriter == true}"
                   th:classappend="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? ' hero-name-custom' : ''}"
                   th:style="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? 'background:' + theme.config.hero.colorConfig.nameColor + ';-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent' : ''}">
-                <span class="typewriter-text" th:attr="data-text=${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.name != null ? theme.config.hero.profileInfo.name : site.title},data-backspace=${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.enableTypewriterBackspace == true ? 'true' : 'false'}">Serenity</span>
+                <span class="typewriter-text" th:attr="data-text=${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.name != null ? theme.config.hero.profileInfo.name : site.title},data-backspace=${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.enableTypewriterBackspace == true ? 'true' : 'false'}">Serendipity</span>
                 <span class="typewriter-cursor"
                       th:classappend="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? ' typewriter-cursor-custom' : ''}"
                       th:style="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? 'background:' + theme.config.hero.colorConfig.nameColor : ''}"></span>
               </h1>
               <h1 class="hero-name" th:if="${theme.config.hero == null or theme.config.hero.profileInfo == null or theme.config.hero.profileInfo.enableTypewriter != true}" th:text="${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.name != null ? theme.config.hero.profileInfo.name : site.title}"
                   th:classappend="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? ' hero-name-custom' : ''}"
-                  th:style="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? 'background:' + theme.config.hero.colorConfig.nameColor + ';-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent' : ''}">Serenity</h1>
+                  th:style="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.nameColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.nameColor) ? 'background:' + theme.config.hero.colorConfig.nameColor + ';-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent' : ''}">Serendipity</h1>
               
               <p class="hero-tagline" th:text="${theme.config.hero != null and theme.config.hero.profileInfo != null and theme.config.hero.profileInfo.tagline != null ? theme.config.hero.profileInfo.tagline : site.subtitle}"
                  th:classappend="${theme.config.hero != null and theme.config.hero.colorConfig != null and theme.config.hero.colorConfig.taglineColor != null and !#strings.isEmpty(theme.config.hero.colorConfig.taglineColor) ? ' hero-tagline-custom' : ''}"
@@ -350,8 +350,8 @@
         </div>
 
         <div class="theme-decor" th:if="${theme.config.home == null || theme.config.home.decorConfig == null || theme.config.home.decorConfig.showThemeDecor == null || theme.config.home.decorConfig.showThemeDecor}">
-          <img th:src="${theme.config.home != null && theme.config.home.decorConfig != null && theme.config.home.decorConfig.customDecorLight != null && !#strings.isEmpty(theme.config.home.decorConfig.customDecorLight) ? theme.config.home.decorConfig.customDecorLight : '/themes/theme-Serenity/assets/public/light.webp'}" alt="" class="theme-decor-light" />
-          <img th:src="${theme.config.home != null && theme.config.home.decorConfig != null && theme.config.home.decorConfig.customDecorDark != null && !#strings.isEmpty(theme.config.home.decorConfig.customDecorDark) ? theme.config.home.decorConfig.customDecorDark : '/themes/theme-Serenity/assets/public/dark.webp'}" alt="" class="theme-decor-dark" />
+          <img th:src="${theme.config.home != null && theme.config.home.decorConfig != null && theme.config.home.decorConfig.customDecorLight != null && !#strings.isEmpty(theme.config.home.decorConfig.customDecorLight) ? theme.config.home.decorConfig.customDecorLight : '/themes/theme-serendipity/assets/public/light.webp'}" alt="" class="theme-decor-light" />
+          <img th:src="${theme.config.home != null && theme.config.home.decorConfig != null && theme.config.home.decorConfig.customDecorDark != null && !#strings.isEmpty(theme.config.home.decorConfig.customDecorDark) ? theme.config.home.decorConfig.customDecorDark : '/themes/theme-serendipity/assets/public/dark.webp'}" alt="" class="theme-decor-dark" />
         </div>
 
         <div class="hero-scroll">
@@ -701,10 +701,10 @@
       <script>
         function initMemoLightbox() {
 
-          if (!window.__memoLightbox && typeof SerenityLightbox !== 'undefined') {
+          if (!window.__memoLightbox && typeof SerendipityLightbox !== 'undefined') {
             var memoZone = document.querySelector('.memo-zone');
             if (memoZone) {
-              window.__memoLightbox = SerenityLightbox.create({
+              window.__memoLightbox = SerendipityLightbox.create({
                 className: 'memo-lightbox',
                 delegateSelector: '.memo-zone .photo-img'
               });

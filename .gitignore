@@ -1,0 +1,19 @@
+# IDE / 编辑器
+.vscode/
+.idea/
+*.code-workspace
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件与日志
+*.log
+*.tmp
+*.swp
+
+# 主题打包产物（Release 由 CI 生成）
+*.zip
+
+# 依赖（若有）
+node_modules/

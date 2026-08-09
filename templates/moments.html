@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
-  Theme: theme-Serenity
-  Author: Serenity
+  Theme: theme-serendipity
+  Author: Serendipity
   Build: 2026-07-05 00:01:15
   Fingerprint: 1a93cc3686d739b8
-  Copyright (c) 2026 Serenity. All rights reserved.
+  Copyright (c) 2026 Serendipity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org"
@@ -57,7 +57,7 @@
                      th:with="content = ${moment.spec.content}">
                   <!-- 头像 -->
                   <img class="moment-avatar" 
-                       th:src="${moment.owner != null && moment.owner.avatar != null ? moment.owner.avatar : (site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp')}" 
+                       th:src="${moment.owner != null && moment.owner.avatar != null ? moment.owner.avatar : (site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp')}" 
                        alt="avatar" />
                   
                   <!-- 气泡 -->
@@ -160,10 +160,10 @@
         }
       });
 
-      if (!window.__momentLightbox && typeof SerenityLightbox !== 'undefined') {
+      if (!window.__momentLightbox && typeof SerendipityLightbox !== 'undefined') {
         var momentMedia = document.querySelector('.moment-media');
         if (momentMedia) {
-          window.__momentLightbox = SerenityLightbox.create({
+          window.__momentLightbox = SerendipityLightbox.create({
             className: 'moment-lightbox',
             delegateSelector: '.moment-media img'
           });

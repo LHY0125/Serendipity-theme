@@ -1,9 +1,9 @@
 /**
- * Theme: theme-Serenity
- * Author: Serenity
+ * Theme: theme-serendipity
+ * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
- * Copyright (c) 2026 Serenity. All rights reserved.
+ * Copyright (c) 2026 Serendipity. All rights reserved.
  */
 
 // 图库页面 - 筛选、灯箱、加载动画
@@ -59,8 +59,8 @@ function initPhotosPage() {
   });
 
   // ========== 灯箱 ==========
-  if (!window.__photosLightbox && typeof SerenityLightbox !== 'undefined') {
-    window.__photosLightbox = SerenityLightbox.create({
+  if (!window.__photosLightbox && typeof SerendipityLightbox !== 'undefined') {
+    window.__photosLightbox = SerendipityLightbox.create({
       className: 'photo-lightbox',
       delegateSelector: '.photo-wrapper img'
     });

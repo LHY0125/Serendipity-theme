@@ -1,7 +1,7 @@
 ﻿apiVersion: v1alpha1
 kind: Setting
 metadata:
-  name: theme-Serenity-setting
+  name: theme-serendipity-setting
 spec:
   forms:
     - group: basic
@@ -11,19 +11,19 @@ spec:
           name: siteInfo
           label: 站点信息
           value:
-            title: "Serenity's Blog"
-            author: "Serenity"
+            title: "Serendipity's Blog"
+            author: "Serendipity"
             description: "前端开发者 / 独立开发者 / 博主"
           children:
             - $formkit: text
               name: title
               label: 站点标题
-              value: "Serenity's Blog"
+              value: "Serendipity's Blog"
               help: 显示在浏览器标签和页脚
             - $formkit: text
               name: author
               label: 作者名称
-              value: "Serenity"
+              value: "Serendipity"
               help: 用于关于页面和文章署名
             - $formkit: textarea
               name: description
@@ -105,7 +105,7 @@ spec:
           label: 水印设置
           value:
             watermarkEnabled: true
-            watermarkText: "Serenity"
+            watermarkText: "Serendipity"
             watermarkSource: "custom"
             watermarkOpacity: 0.05
           children:
@@ -118,7 +118,7 @@ spec:
             - $formkit: text
               name: watermarkText
               label: 水印文字
-              value: "Serenity"
+              value: "Serendipity"
               if: $get(watermark_enabled).value
               help: 自定义水印显示的文字，默认为站点标题
             - $formkit: select
@@ -330,7 +330,7 @@ spec:
           name: profileInfo
           label: 个人信息
           value:
-            name: "Serenity"
+            name: "Serendipity"
             enableTypewriter: true
             enableTypewriterBackspace: false
             tagline: "热爱可抵岁月漫长"
@@ -339,7 +339,7 @@ spec:
             - $formkit: text
               name: name
               label: 显示名称
-              value: "Serenity"
+              value: "Serendipity"
               help: 显示在首页头像下方
             - $formkit: checkbox
               name: enableTypewriter

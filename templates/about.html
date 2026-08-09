@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
-  Theme: theme-Serenity
-  Author: Serenity
+  Theme: theme-serendipity
+  Author: Serendipity
   Build: 2026-07-05 00:01:15
   Fingerprint: 1a93cc3686d739b8
-  Copyright (c) 2026 Serenity. All rights reserved.
+  Copyright (c) 2026 Serendipity. All rights reserved.
 -->
 
 <html xmlns:th="https://www.thymeleaf.org"
@@ -27,7 +27,7 @@
       "@type": "Person",
       "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : site.title}]]*/ "",
       "description": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle}]]*/ "",
-      "image": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-Serenity/assets/public/logo.webp'}]]*/ "",
+      "image": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}]]*/ "",
       "url": /*[[${site.url}]]*/ ""
     }
   }
@@ -54,7 +54,7 @@
             </th:block>
           </div>
           <div class="about-hero-avatar" data-aos="zoom-in" data-aos-delay="200">
-            <img th:src="${site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp'}" alt="Avatar" />
+            <img th:src="${site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp'}" alt="Avatar" />
           </div>
           <div class="hero-tags-right" data-aos="fade-left" data-aos-delay="100">
             <th:block th:if="${theme.config.about.tagsConfig.tagsRight != null}">
@@ -69,12 +69,12 @@
           </th:block>
           <th:block th:if="${theme.config.about == null || theme.config.about.tagsConfig == null || (theme.config.about.tagsConfig.showTags != null && !theme.config.about.tagsConfig.showTags)}">
           <div class="about-hero-avatar" data-aos="zoom-in" data-aos-delay="200">
-            <img th:src="${site.logo ?: '/themes/theme-Serenity/assets/public/logo.webp'}" alt="Avatar" />
+            <img th:src="${site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp'}" alt="Avatar" />
           </div>
           </th:block>
         </div>
         <div class="about-hero-info" data-aos="fade-up" data-aos-delay="300">
-          <h1 class="about-name" th:text="${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : site.title}">Serenity</h1>
+          <h1 class="about-name" th:text="${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : site.title}">Serendipity</h1>
           <p class="about-bio" th:text="${site.subtitle}">前端开发者 / 独立开发者 / 博主</p>
         </div>
       </div>
@@ -84,7 +84,7 @@
       <!-- 站在卡片上的吉祥物 -->
       <th:block th:if="${theme.config.about == null || theme.config.about.mascotConfig == null || theme.config.about.mascotConfig.showMascot == null || theme.config.about.mascotConfig.showMascot}">
         <div class="about-card-mascot">
-          <img th:src="${theme.config.about != null && theme.config.about.mascotConfig != null && theme.config.about.mascotConfig.mascotImage != null && !#strings.isEmpty(theme.config.about.mascotConfig.mascotImage) ? theme.config.about.mascotConfig.mascotImage : '/themes/theme-Serenity/assets/images/about-mascot.gif'}" alt="" />
+          <img th:src="${theme.config.about != null && theme.config.about.mascotConfig != null && theme.config.about.mascotConfig.mascotImage != null && !#strings.isEmpty(theme.config.about.mascotConfig.mascotImage) ? theme.config.about.mascotConfig.mascotImage : '/themes/theme-serendipity/assets/images/about-mascot.gif'}" alt="" />
         </div>
         <span class="about-mascot-text" th:text="${theme.config.about != null && theme.config.about.mascotConfig != null && theme.config.about.mascotConfig.mascotText != null && !#strings.isEmpty(theme.config.about.mascotConfig.mascotText) ? theme.config.about.mascotConfig.mascotText : '嘿，你好啊~'}">嘿，你好啊~</span>
       </th:block>

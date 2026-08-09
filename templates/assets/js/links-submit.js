@@ -1,9 +1,9 @@
 /**
- * Theme: theme-Serenity
- * Author: Serenity
+ * Theme: theme-serendipity
+ * Author: Serendipity
  * Build: 2026-07-10 21:20:49
  * Fingerprint: 821f517d56c40c00
- * Copyright (c) 2026 Serenity. All rights reserved.
+ * Copyright (c) 2026 Serendipity. All rights reserved.
  */
 
 function showToast(message, type = 'success', title = '') {
