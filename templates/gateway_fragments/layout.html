@@ -86,7 +86,7 @@
                th:data-api-mobile="${theme.config.home.backgroundConfig.heroBackgroundApiMobile}" />
         </th:block>
         <th:block th:unless="${hasApi}">
-          <th:block th:with="bgUrl = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackground != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackground)) ? theme.config.home.backgroundConfig.heroBackground : '/themes/theme-serendipity/assets/public/labixiaoxi.webp'}">
+          <th:block th:with="bgUrl = ${(theme.config.home != null and theme.config.home.backgroundConfig != null and theme.config.home.backgroundConfig.heroBackground != null and not #strings.isEmpty(theme.config.home.backgroundConfig.heroBackground)) ? theme.config.home.backgroundConfig.heroBackground : '/themes/serendipity/assets/public/labixiaoxi.webp'}">
             <img th:unless="${#strings.endsWith(#strings.toLowerCase(bgUrl), '.mp4') || #strings.endsWith(#strings.toLowerCase(bgUrl), '.webm')}"
                  th:src="${bgUrl}" alt="" class="gateway-wallpaper-img loaded" />
           </th:block>
@@ -150,7 +150,7 @@
           <div class="brand-top">
             <div class="brand-logo-row">
               <div class="brand-logo-icon">
-                <img th:src="${site.logo ?: (site.favicon ?: '/themes/theme-serendipity/assets/public/logo.webp')}"
+                <img th:src="${site.logo ?: (site.favicon ?: '/themes/serendipity/assets/public/logo.webp')}"
                      th:alt="${site.title}" alt="Logo" />
               </div>
               <div class="brand-logo-info">

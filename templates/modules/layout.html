@@ -109,13 +109,13 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" th:content="${title != null ? title + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title) : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
   <meta property="og:description" th:content="${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle}" />
-  <meta property="og:image" th:content="${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}" />
+  <meta property="og:image" th:content="${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/serendipity/assets/public/logo.webp'}" />
   <meta property="og:locale" content="zh_CN" />
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" th:content="${title != null ? title + ' - ' + (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title) : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}" />
   <meta name="twitter:description" th:content="${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle}" />
-  <meta name="twitter:image" th:content="${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}" />
+  <meta name="twitter:image" th:content="${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/serendipity/assets/public/logo.webp'}" />
 
   
   <link rel="preload" th:href="@{/assets/fonts/qweather-icons.css}" as="style" onload="this.onload=null;this.rel='stylesheet'" />
@@ -248,7 +248,7 @@
     "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title}]]*/ "Serendipity's Blog",
     "url": /*[[${site.url}]]*/ "",
     "description": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle}]]*/ "",
-    "image": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}]]*/ "",
+    "image": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/serendipity/assets/public/logo.webp'}]]*/ "",
     "author": {
       "@type": "Person",
       "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title)}]]*/ "Serendipity"
@@ -258,7 +258,7 @@
       "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.title != null ? theme.config.basic.siteInfo.title : site.title}]]*/ "Serendipity's Blog",
       "logo": {
         "@type": "ImageObject",
-        "url": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}]]*/ ""
+        "url": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/serendipity/assets/public/logo.webp'}]]*/ ""
       }
     },
     "potentialAction": {
@@ -293,7 +293,7 @@
     
     <div class="welcome-content">
       <div class="welcome-logo-wrapper">
-        <img th:src="${site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp'}" 
+        <img th:src="${site.logo ?: '/themes/serendipity/assets/public/logo.webp'}" 
              alt="Logo" 
              class="welcome-logo" />
         <div class="welcome-logo-ring"></div>
@@ -316,10 +316,10 @@
       <div class="welcome-mascot-row">
         <div class="welcome-mascot" id="welcomeMascot">
 
-          <img th:src="${theme.config.welcome != null && theme.config.welcome.welcomeConfig != null && theme.config.welcome.welcomeConfig.mascotDark != null && !#strings.isEmpty(theme.config.welcome.welcomeConfig.mascotDark) ? theme.config.welcome.welcomeConfig.mascotDark : '/themes/theme-serendipity/assets/images/welcome/babara.gif'}" 
+          <img th:src="${theme.config.welcome != null && theme.config.welcome.welcomeConfig != null && theme.config.welcome.welcomeConfig.mascotDark != null && !#strings.isEmpty(theme.config.welcome.welcomeConfig.mascotDark) ? theme.config.welcome.welcomeConfig.mascotDark : '/themes/serendipity/assets/images/welcome/babara.gif'}" 
                alt="" class="welcome-mascot-img welcome-mascot-dark" />
 
-          <img th:src="${theme.config.welcome != null && theme.config.welcome.welcomeConfig != null && theme.config.welcome.welcomeConfig.mascotLight != null && !#strings.isEmpty(theme.config.welcome.welcomeConfig.mascotLight) ? theme.config.welcome.welcomeConfig.mascotLight : '/themes/theme-serendipity/assets/images/welcome/kirara.gif'}" 
+          <img th:src="${theme.config.welcome != null && theme.config.welcome.welcomeConfig != null && theme.config.welcome.welcomeConfig.mascotLight != null && !#strings.isEmpty(theme.config.welcome.welcomeConfig.mascotLight) ? theme.config.welcome.welcomeConfig.mascotLight : '/themes/serendipity/assets/images/welcome/kirara.gif'}" 
                alt="" class="welcome-mascot-img welcome-mascot-light" />
         </div>
         <a th:if="${theme.config.welcome == null || theme.config.welcome.welcomeConfig == null || theme.config.welcome.welcomeConfig.mascotCredit == null || !#strings.isEmpty(theme.config.welcome.welcomeConfig.mascotCredit)}"
@@ -378,7 +378,7 @@
       })();
     </script>
     <div class="page-transition is-initial-loading" id="page-transition">
-      <img class="page-transition-gif" th:src="${theme.config.basic.loadingConfig.loadingGif != null and !#strings.isEmpty(theme.config.basic.loadingConfig.loadingGif) ? theme.config.basic.loadingConfig.loadingGif : '/themes/theme-serendipity/assets/images/welcome/kirara.gif'}" alt="加载中" />
+      <img class="page-transition-gif" th:src="${theme.config.basic.loadingConfig.loadingGif != null and !#strings.isEmpty(theme.config.basic.loadingConfig.loadingGif) ? theme.config.basic.loadingConfig.loadingGif : '/themes/serendipity/assets/images/welcome/kirara.gif'}" alt="加载中" />
     </div>
     <script>
       (function () {
@@ -592,7 +592,7 @@
   <!-- ANI 动态鼠标指针 (Hue 定制) -->
   <script th:inline="javascript">
     (function () {
-      var href = /*[[@{/assets/fonts/fontawesome.min.css}]]*/ '/themes/theme-serendipity/assets/fonts/fontawesome.min.css';
+      var href = /*[[@{/assets/fonts/fontawesome.min.css}]]*/ '/themes/serendipity/assets/fonts/fontawesome.min.css';
       function loadFontAwesome() {
         if (document.querySelector('link[data-fa-loaded]')) return;
         var link = document.createElement('link');

@@ -1,5 +1,5 @@
 /**
- * Theme: theme-serendipity
+ * Theme: serendipity
  * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
@@ -7,7 +7,7 @@
  */
 
 ﻿/**
- * Theme: theme-serendipity
+ * Theme: serendipity
  * Author: Serendipity
  * Build: 2026-06-27 20:58:48
  * Fingerprint: 057d2ea289d80a0c
@@ -15,7 +15,7 @@
  */
 
 /**
- * Theme: theme-serendipity
+ * Theme: serendipity
  * Author: Serendipity
  * Build: 2026-06-27 20:40:02
  * Fingerprint: b4865150106d4433
@@ -27,7 +27,7 @@
     window.__SERENITY_STAR_GALLERY_CLEANUP__();
   }
 
-  const defaultLogo = '/themes/theme-serendipity/assets/public/logo.webp';
+  const defaultLogo = '/themes/serendipity/assets/public/logo.webp';
   const avatarFallbackSvg = '<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M938.666667 512v307.456a73.685333 73.685333 0 0 1-106.666667 65.877333 123.349333 123.349333 0 0 0-123.562667 7.68 123.392 123.392 0 0 1-136.874666 0l-15.061334-9.984a80.256 80.256 0 0 0-89.002666 0l-15.061334 10.026667a123.392 123.392 0 0 1-136.874666 0 123.349333 123.349333 0 0 0-123.605334-7.68A73.685333 73.685333 0 0 1 85.333333 819.413333V512C85.333333 276.352 276.352 85.333333 512 85.333333s426.666667 191.018667 426.666667 426.666667zM403.072 614.314667a32 32 0 1 0-38.144 51.370666A246.016 246.016 0 0 0 512 714.666667a246.016 246.016 0 0 0 147.072-48.981334 32 32 0 1 0-38.144-51.370666A182.058667 182.058667 0 0 1 512 650.666667a182.058667 182.058667 0 0 1-108.928-36.352zM682.666667 405.333333c0-35.328-19.114667-64-42.666667-64s-42.666667 28.672-42.666667 64 19.114667 64 42.666667 64 42.666667-28.672 42.666667-64zM384 469.333333c23.552 0 42.666667-28.672 42.666667-64S407.552 341.333333 384 341.333333s-42.666667 28.672-42.666667 64 19.114667 64 42.666667 64z"/></svg>';
   const defaultBio = '行走在数字荒原的观测者，试图用文字与代码在万物互联的宇宙里锚定一片宁静星域。专注于前端美学、极简主义设计与去中心化星链网络探索。';
   const statusEndpoint = '/apis/anonymous.astrahub.halo.run/v1alpha1/star-gallery/-/status';

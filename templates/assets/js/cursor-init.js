@@ -1,5 +1,5 @@
 /**
- * Theme: theme-serendipity
+ * Theme: serendipity
  * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
@@ -24,11 +24,11 @@
  */
 (function() {
   var s = document.createElement('script');
-  s.src = '/themes/theme-serendipity/assets/js/ani-cursor.bundle.js';
+  s.src = '/themes/serendipity/assets/js/ani-cursor.bundle.js';
   s.onload = function() {
     var lib = window['ani-cursor.js'];
     if (!lib || !lib.LoadANICursorPromise) return;
-    var B = '/themes/theme-serendipity/assets/fonts/cursor/';
+    var B = '/themes/serendipity/assets/fonts/cursor/';
     var urls = {
       arrow:  B + encodeURIComponent('指向arrow.ani'),
       beam:   B + encodeURIComponent('复制beam.ani'),

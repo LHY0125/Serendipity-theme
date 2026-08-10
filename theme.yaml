@@ -1,22 +1,22 @@
 apiVersion: theme.halo.run/v1alpha1
 kind: Theme
 metadata:
-  name: theme-serendipity
+  name: serendipity
 spec:
   displayName: Serendipity-Grace
   author:
     name: Serendipity
     website: https://github.com/LHY0125
   description: 基于 Serenity-Grace 二次开发的 Halo 博客主题，简约优雅，支持亮色/暗色双主题色配置。
-  logo: /themes/theme-serendipity/assets/public/logo.webp
+  logo: /themes/serendipity/assets/public/logo.webp
   homepage: https://github.com/LHY0125/Serendipity-theme
   repo: https://github.com/LHY0125/Serendipity-theme
   issues: https://github.com/LHY0125/Serendipity-theme/issues
   license:
     - name: GPL-3.0
       url: LICENSE
-  settingName: theme-serendipity-setting
-  configMapName: theme-serendipity-configmap
+  settingName: serendipity-setting
+  configMapName: serendipity-configmap
   version: 2.1.5
   requires: ">=2.0.0"
   customTemplates:

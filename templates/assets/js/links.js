@@ -1,5 +1,5 @@
 /**
- * Theme: theme-serendipity
+ * Theme: serendipity
  * Author: Serendipity
  * Build: 2026-07-05 00:01:15
  * Fingerprint: 1a93cc3686d739b8
@@ -7,7 +7,7 @@
  */
 
 ﻿/**
- * Theme: theme-serendipity
+ * Theme: serendipity
  * Author: Serendipity
  * Build: 2026-06-27 20:58:48
  * Fingerprint: 057d2ea289d80a0c

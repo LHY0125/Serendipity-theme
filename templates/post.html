@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Theme: theme-serendipity
+  Theme: serendipity
   Author: Serendipity
   Build: 2026-07-05 00:01:15
   Fingerprint: 1a93cc3686d739b8
@@ -55,7 +55,7 @@
       "name": /*[[${site.title}]]*/ "",
       "logo": {
         "@type": "ImageObject",
-        "url": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}]]*/ ""
+        "url": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/serendipity/assets/public/logo.webp'}]]*/ ""
       }
     }
   }
@@ -173,7 +173,7 @@
         <h1 class="post-hero-title" th:text="${post.spec.title}">文章标题</h1>
         <div class="post-hero-meta">
           <span class="post-hero-author" th:if="${post.owner != null}">
-            <img th:src="${post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp')}" alt="" class="post-hero-avatar" />
+            <img th:src="${post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/serendipity/assets/public/logo.webp')}" alt="" class="post-hero-avatar" />
             <span th:text="${post.owner.displayName ?: (theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : 'Author')}">作者</span>
           </span>
           <span class="post-hero-date" th:if="${post.spec.publishTime}">
@@ -407,7 +407,7 @@
                   </div>
                   <div class="widget-author">
                     <img class="author-avatar" 
-                         th:src="${post.owner != null && post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp')}" 
+                         th:src="${post.owner != null && post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/serendipity/assets/public/logo.webp')}" 
                          th:alt="${post.owner != null ? post.owner.displayName : (theme.config.basic != null and theme.config.basic.siteInfo != null ? theme.config.basic.siteInfo.author : 'Author')}" />
                     <div class="author-info">
                       <a class="author-name-link" th:href="@{/about}" href="/about">
@@ -521,7 +521,7 @@
                 </div>
                 <div class="widget-author">
                   <img class="author-avatar" 
-                       th:src="${post.owner != null && post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp')}" 
+                       th:src="${post.owner != null && post.owner.avatar != null && !#strings.isEmpty(post.owner.avatar) ? post.owner.avatar : (site.logo ?: '/themes/serendipity/assets/public/logo.webp')}" 
                        th:alt="${post.owner != null ? post.owner.displayName : theme.config.basic.siteInfo.author}" />
                   <div class="author-info">
                     <a class="author-name-link" th:href="@{/about}" href="/about">
