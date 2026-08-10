@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目性质
 
-Serendipity-Grace（`theme-serendipity`）是 **基于 [atangccc/Serenity-Grace](https://github.com/atangccc/Serenity-Grace) 二次开发的 Halo 2.x 博客主题**（GPL-3.0），樱花粉 + 湖水蓝配色，亮/暗双模式。所有模板代码在 `templates/` 下，无 package.json / Makefile / 编译步骤——**纯手写 HTML + CSS + JS**，通过 `th:` 属性注入 Thymeleaf 表达式。本仓库为 fork：`origin` 指向 `LHY0125/Serendipity-theme`，`upstream` 指向原作者 `atangccc/Serenity-Grace`（合并上游更新用 `git fetch upstream && git merge upstream/main`）。
+Serendipity-Grace（`serendipity`）是 **基于 [atangccc/Serenity-Grace](https://github.com/atangccc/Serenity-Grace) 二次开发的 Halo 2.x 博客主题**（GPL-3.0），樱花粉 + 湖水蓝配色，亮/暗双模式。所有模板代码在 `templates/` 下，无 package.json / Makefile / 编译步骤——**纯手写 HTML + CSS + JS**，通过 `th:` 属性注入 Thymeleaf 表达式。本仓库为 fork：`origin` 指向 `LHY0125/Serendipity-theme`，`upstream` 指向原作者 `atangccc/Serenity-Grace`（合并上游更新用 `git fetch upstream && git merge upstream/main`）。
 
 ### 品牌署名约束（GPL 二次开发）
 
@@ -44,7 +44,7 @@ th:replace="~{modules/layout :: html(title = ..., content = ~{::content}, head =
 
 ### 模块组件 `templates/modules/`
 
-`header.html`（导航 + 菜单，含下拉 + `nav-icon` 图标映射）、`footer.html`、`layout.html`、`nav-icon.html`（按 URL 匹配菜单图标）、`search-modal.html`、`watermark.html`。
+`header.html`（导航 + 菜单，含下拉 + `nav-icon` 图标映射）、`footer.html`、`layout.html`、`nav-icon.html`（按 URL 匹配菜单图标）、`search-modal.html`、`watermark.html`、`heatmap.html`（文章发布热力图，配置经 `th:attr` 注入 `data-*`，内容由 `heatmap.js` 异步渲染）。
 
 ### 网关页面 `templates/gateway_fragments/layout.html`
 
@@ -55,7 +55,7 @@ th:replace="~{modules/layout :: html(title = ..., content = ~{::content}, head =
 - `css/`、`js/` 按页面一对一命名（如 `index.html` ↔ `css/index.css` ↔ `js/archives.js`）
 - 第三方库**已本地化**：`lenis.min.js`、`swiper-bundle.min.js`、`aos.js`、`iconify.min.js`、`APlayer.min.js`、`Meting2.min.js`、`marked.min.js`、FontAwesome webfonts、ANI 动态光标（`fonts/cursor/`）
 - `public/` 静态图（logo、亮/暗背景 `lightbg.webp` / `darkbg.webp`）。
-- **资源引用有两种写法并存**：模板内多用 Thymeleaf 相对路径 `@{/assets/...}`（无需改）；部分模板与 JS（如 `cursor-init.js`、`star-gallery.js`）用硬编码绝对路径 `/themes/theme-serendipity/assets/...`——此路径含主题 `metadata.name`，改名需全局同步替换，且 `settings.yaml` 的 `metadata.name` 要与 `theme.yaml` 的 `settingName`/`configMapName` 对齐。
+- **资源引用有两种写法并存**：模板内多用 Thymeleaf 相对路径 `@{/assets/...}`（无需改）；部分模板与 JS（如 `cursor-init.js`、`star-gallery.js`）用硬编码绝对路径 `/themes/serendipity/assets/...`——此路径含主题 `metadata.name`，改名需全局同步替换，且 `settings.yaml` 的 `metadata.name` 要与 `theme.yaml` 的 `settingName`/`configMapName` 对齐。
 
 ## PJAX 关键约定（易踩坑）
 
@@ -67,7 +67,7 @@ th:replace="~{modules/layout :: html(title = ..., content = ~{::content}, head =
 
 ## 后台配置分组（settings.yaml）
 
-16 组：`basic`(基本) / `hero`(首页头部) / `welcome`(欢迎页) / `social`(社交) / `compass`(风向标) / `home`(首页内容) / `post`(文章页) / `footer`(页脚) / `sidebar`(侧边栏) / `about` / `seo` / `watermark` / `projects` / `links` / `starGallery` / `music`。新增配置时在此注册 group + FormKit schema，模板侧用 `theme.config.<group>.<field>` 读取。
+17 组：`basic`(基本) / `hero`(首页头部) / `welcome`(欢迎页) / `social`(社交) / `compass`(风向标) / `home`(首页内容) / `post`(文章页) / `footer`(页脚) / `sidebar`(侧边栏) / `about` / `seo` / `watermark` / `projects` / `links` / `starGallery` / `music` / `heatmap`(写作热力图)。新增配置时在此注册 group + FormKit schema，模板侧用 `theme.config.<group>.<field>` 读取。
 
 ## 插件依赖
 

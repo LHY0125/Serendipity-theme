@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Theme: theme-serendipity
+  Theme: serendipity
   Author: Serendipity
   Build: 2026-07-05 00:01:15
   Fingerprint: 1a93cc3686d739b8
@@ -11,6 +11,7 @@
       th:replace="~{modules/layout :: html(title = ${singlePage.spec.title}, content = ~{::content}, head = ~{::head})}">
 <th:block th:fragment="head">
   <link rel="stylesheet" th:href="@{/assets/css/about.css}" />
+  <link rel="stylesheet" th:if="${theme.config.heatmap?.enabled == true}" th:href="@{/assets/css/heatmap.css}" />
   <link th:if="${theme.config.about != null && theme.config.about.steamConfig != null && theme.config.about.steamConfig.showSteam}" rel="stylesheet" th:href="@{/assets/css/steam.css}" />
 
   <meta property="og:type" content="profile" />
@@ -27,7 +28,7 @@
       "@type": "Person",
       "name": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.author != null ? theme.config.basic.siteInfo.author : site.title}]]*/ "",
       "description": /*[[${theme.config.basic != null and theme.config.basic.siteInfo != null and theme.config.basic.siteInfo.description != null ? theme.config.basic.siteInfo.description : site.subtitle}]]*/ "",
-      "image": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/theme-serendipity/assets/public/logo.webp'}]]*/ "",
+      "image": /*[[${site.logo != null && !#strings.isEmpty(site.logo) ? site.logo : '/themes/serendipity/assets/public/logo.webp'}]]*/ "",
       "url": /*[[${site.url}]]*/ ""
     }
   }
@@ -38,6 +39,7 @@
   <script th:if="${theme.config.about != null && theme.config.about.foreverBlogConfig != null && theme.config.about.foreverBlogConfig.showForeverBlog}" th:src="@{/assets/js/about.js}" defer></script>
   <script th:if="${theme.config.about != null && theme.config.about.steamConfig != null && theme.config.about.steamConfig.showSteam}" th:src="@{/assets/js/steam.js}" defer></script>
   <script th:if="${theme.config.about != null && theme.config.about.afdianSettings != null && theme.config.about.afdianSettings.showAfdian}" th:src="@{/assets/js/about-afdian.js}"></script>
+  <script th:if="${theme.config.heatmap?.enabled == true}" th:src="@{/assets/js/heatmap.js}" defer></script>
   <div class="container">
     <section class="about-hero" data-aos="fade-up">
       <div class="about-hero-center">
@@ -54,7 +56,7 @@
             </th:block>
           </div>
           <div class="about-hero-avatar" data-aos="zoom-in" data-aos-delay="200">
-            <img th:src="${site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp'}" alt="Avatar" />
+            <img th:src="${site.logo ?: '/themes/serendipity/assets/public/logo.webp'}" alt="Avatar" />
           </div>
           <div class="hero-tags-right" data-aos="fade-left" data-aos-delay="100">
             <th:block th:if="${theme.config.about.tagsConfig.tagsRight != null}">
@@ -69,7 +71,7 @@
           </th:block>
           <th:block th:if="${theme.config.about == null || theme.config.about.tagsConfig == null || (theme.config.about.tagsConfig.showTags != null && !theme.config.about.tagsConfig.showTags)}">
           <div class="about-hero-avatar" data-aos="zoom-in" data-aos-delay="200">
-            <img th:src="${site.logo ?: '/themes/theme-serendipity/assets/public/logo.webp'}" alt="Avatar" />
+            <img th:src="${site.logo ?: '/themes/serendipity/assets/public/logo.webp'}" alt="Avatar" />
           </div>
           </th:block>
         </div>
@@ -80,11 +82,15 @@
       </div>
     </section>
 
+    <th:block th:if="${theme.config.heatmap?.enabled == true}">
+      <th:block th:replace="~{modules/heatmap :: heatmap}" />
+    </th:block>
+
     <div th:if="${theme.config.about == null || theme.config.about.aboutSiteConfig == null || theme.config.about.aboutSiteConfig.showAboutSite == null || theme.config.about.aboutSiteConfig.showAboutSite}" class="about-card glass-card about-card-with-mascot" data-aos="fade-up" data-aos-delay="100" th:with="siteStats = ${siteStatsFinder.getStats()}">
       <!-- 站在卡片上的吉祥物 -->
       <th:block th:if="${theme.config.about == null || theme.config.about.mascotConfig == null || theme.config.about.mascotConfig.showMascot == null || theme.config.about.mascotConfig.showMascot}">
         <div class="about-card-mascot">
-          <img th:src="${theme.config.about != null && theme.config.about.mascotConfig != null && theme.config.about.mascotConfig.mascotImage != null && !#strings.isEmpty(theme.config.about.mascotConfig.mascotImage) ? theme.config.about.mascotConfig.mascotImage : '/themes/theme-serendipity/assets/images/about-mascot.gif'}" alt="" />
+          <img th:src="${theme.config.about != null && theme.config.about.mascotConfig != null && theme.config.about.mascotConfig.mascotImage != null && !#strings.isEmpty(theme.config.about.mascotConfig.mascotImage) ? theme.config.about.mascotConfig.mascotImage : '/themes/serendipity/assets/images/about-mascot.gif'}" alt="" />
         </div>
         <span class="about-mascot-text" th:text="${theme.config.about != null && theme.config.about.mascotConfig != null && theme.config.about.mascotConfig.mascotText != null && !#strings.isEmpty(theme.config.about.mascotConfig.mascotText) ? theme.config.about.mascotConfig.mascotText : '嘿，你好啊~'}">嘿，你好啊~</span>
       </th:block>

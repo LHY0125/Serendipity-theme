@@ -1,7 +1,7 @@
 ﻿apiVersion: v1alpha1
 kind: Setting
 metadata:
-  name: theme-serendipity-setting
+  name: serendipity-setting
 spec:
   forms:
     - group: basic
@@ -2006,3 +2006,41 @@ spec:
               if: $get(music_enabled).value
               label: 自动播放
               value: false
+
+    - group: heatmap
+      label: 写作热力图
+      formSchema:
+        - $formkit: switch
+          id: heatmap_enabled
+          name: enabled
+          label: 启用文章热力图
+          value: false
+          help: 在归档页显示 GitHub 风格的文章发布热力图（不依赖插件，数据来自 Halo Content API）
+        - $formkit: text
+          name: title
+          if: $get(heatmap_enabled).value
+          label: 卡片标题
+          value: "写作热力图"
+        - $formkit: select
+          name: defaultRange
+          if: $get(heatmap_enabled).value
+          label: 默认显示范围
+          value: more
+          options:
+            - label: 全年（约 53 列）
+              value: more
+            - label: 半年（约 26~27 列）
+              value: less
+          help: 用户可通过底部 Less/More 按钮切换
+        - $formkit: switch
+          id: heatmap_clickable
+          name: clickable
+          if: $get(heatmap_enabled).value
+          label: 点击跳转归档
+          value: true
+          help: 点击某天的格子跳转到该年月的归档页（/archives/{年}/{月}，月需两位，如 /archives/2026/01）
+        - $formkit: switch
+          name: showStats
+          if: $get(heatmap_enabled).value
+          label: 显示统计文字
+          value: true

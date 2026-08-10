@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<th:block th:fragment="heatmap">
+  <section class="heatmap-card" data-heatmap
+    th:attr="data-title=${theme.config.heatmap?.title ?: '写作热力图'},
+             data-range=${theme.config.heatmap?.defaultRange ?: 'more'},
+             data-clickable=${theme.config.heatmap?.clickable == true ? 'true' : 'false'},
+             data-show-stats=${theme.config.heatmap?.showStats != false ? 'true' : 'false'}"
+    data-aos="fade-up">
+    <!-- 内容由 heatmap.js 异步渲染，骨架占位 -->
+    <div class="heatmap-body">
+      <div class="heatmap-loading">正在加载写作热力图…</div>
+    </div>
+  </section>
+</th:block>
+
+</html>

@@ -1,0 +1,227 @@
+/*
+ * Theme: serendipity
+ * Author: Serendipity
+ * Copyright (c) 2026 Serendipity. All rights reserved.
+ */
+
+/* ========== 文章发布热力图（GitHub Contribution Graph 风格） ========== */
+
+.heatmap-card {
+  /* 5 级绿色色阶，暗色为基（与主题一致），亮色由 [data-theme="light"] 覆盖 */
+  --hm-l0: #161b22;
+  --hm-l1: #0e4429;
+  --hm-l2: #006d32;
+  --hm-l3: #26a641;
+  --hm-l4: #39d353;
+
+  /* 方格尺寸/间距/圆角：所有轨道（网格/月份/星期）引用同一组变量，
+     @media (hover: none) 触屏设备仅覆盖变量值即可整体放大，避免漏改 */
+  --hm-size: 12px;
+  --hm-gap: 3px;
+  --hm-radius: 2px;
+
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+  /* 注意：不可设 overflow: hidden，会裁剪 cell 的向上 tooltip */
+}
+
+[data-theme="light"] .heatmap-card {
+  --hm-l0: #ebedf0;
+  --hm-l1: #9be9a8;
+  --hm-l2: #40c463;
+  --hm-l3: #30a14e;
+  --hm-l4: #216e39;
+}
+
+.heatmap-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+.heatmap-loading {
+  padding: var(--space-2) 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.heatmap-empty {
+  margin: var(--space-3) 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* 横向滚动容器：overflow-x 会使 overflow-y 计算值也变为 auto（两轴裁剪），
+   顶部必须留足 24px 供首行格子向上弹出 tooltip，否则会被裁掉 */
+.heatmap-scroll {
+  overflow-x: auto;
+  padding-top: 24px;
+}
+
+.heatmap-main {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+/* 星期标签列与网格同轨道数学（repeat(7,12px)+gap:3px+padding 8px 0），
+   margin-top 与月份行等高（16px），保证 Mon/Wed/Fri 与网格首行对齐 */
+.heatmap-weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, var(--hm-size));
+  gap: var(--hm-gap);
+  padding: 8px 0;
+  /* margin-top 与月份行高对齐（见 .heatmap-months height），保证 Mon/Wed/Fri 与网格首行对齐 */
+  margin-top: calc(var(--hm-size) + 4px);
+}
+
+.heatmap-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+  font-size: 10px;
+  line-height: var(--hm-size);
+  color: var(--color-text-muted);
+}
+
+.heatmap-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 月份标签行：与主网格完全相同的轨道数学（grid-auto-flow: column; grid-auto-columns: 12px; gap: 3px），
+   两者同属一个横向滚动容器，横滚时标签与格子不错位 */
+.heatmap-months {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--hm-size);
+  gap: var(--hm-gap);
+  height: calc(var(--hm-size) + 4px);
+}
+
+.heatmap-month {
+  position: relative;
+}
+
+/* 10px 字号下 Jan/Sep/Dec 约 17-19px 宽 > 12px 列宽，绝对定位于本列中心，
+   配合 nowrap 溢出到相邻轨道；月份间隔 >= 4 列（约 57px）不会撞车 */
+.heatmap-month-label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: calc(var(--hm-size) + 4px);
+  color: var(--color-text-muted);
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-auto-flow: column;           /* 列优先：每列一周 */
+  grid-template-rows: repeat(7, var(--hm-size));
+  grid-auto-columns: var(--hm-size);
+  gap: var(--hm-gap);
+  padding: 8px 0;
+  animation: heatmap-fade-in 0.3s var(--ease-out);
+}
+
+.heatmap-cell {
+  position: relative;
+  width: var(--hm-size);
+  height: var(--hm-size);
+  border-radius: var(--hm-radius);
+  background: var(--hm-l0);
+}
+.heatmap-cell[data-level="1"] { background: var(--hm-l1); }
+.heatmap-cell[data-level="2"] { background: var(--hm-l2); }
+.heatmap-cell[data-level="3"] { background: var(--hm-l3); }
+.heatmap-cell[data-level="4"] { background: var(--hm-l4); }
+.heatmap-cell.is-empty { visibility: hidden; }
+
+a.heatmap-cell {
+  display: block;
+  text-decoration: none;
+}
+
+/* tooltip：纯 CSS ::after，无 JS 事件 → PJAX 天然安全（无事件可叠加） */
+.heatmap-cell[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #1f2328;
+  color: #fff;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.heatmap-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+}
+
+.heatmap-total {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.heatmap-range {
+  display: flex;
+  gap: 8px;
+}
+
+.heatmap-range-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.heatmap-range-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.heatmap-range-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+@keyframes heatmap-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 触屏设备：方格放大到可触控尺寸（18×18px），仅覆盖变量值，
+   所有轨道（网格/月份/星期）自动同步；53 列宽度随之增大，
+   由 .heatmap-scroll 的 overflow-x: auto 横向滚动兜底，不破版。
+   触屏无 hover，tooltip 不展示属预期 */
+@media (hover: none) {
+  .heatmap-card {
+    --hm-size: 18px;
+    --hm-gap: 4px;
+    --hm-radius: 3px;
+  }
+}
+
+@media (max-width: 768px) {
+  .heatmap-card { padding: var(--space-4); }
+}
