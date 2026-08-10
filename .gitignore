@@ -17,3 +17,6 @@ Thumbs.db
 
 # 依赖（若有）
 node_modules/
+
+# 开发文档（方案/评审/调研，不入库）
+docs/
